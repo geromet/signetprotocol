@@ -9,5 +9,6 @@ export default {
   engines: 'Engines and games',
   roadmap: 'Roadmap',
   legal: 'Principles and legal',
-  contributing: 'Contributing'
+  contributing: 'Contributing',
+  stats: 'Site statistics'
 }

@@ -1,5 +1,7 @@
 import { Footer, Layout, Navbar, ThemeSwitch } from 'nextra-theme-docs'
 import { Banner, Head, Search } from 'nextra/components'
+import { GitHubStars } from '../components/github-stats'
+import { VisitorCounter } from '../components/visitas'
 import { getPageMap } from 'nextra/page-map'
 import 'nextra-theme-docs/style.css'
 import './estilos.css'
@@ -32,12 +34,20 @@ export default async function RootLayout({ children }) {
           banner={<Banner storageKey="signet-beta-1">Signet SDK 0.1 is in beta: the API may change. Your translators are welcome!</Banner>}
           navbar={
             <Navbar logo={logo} projectLink="https://github.com/kian-cx/signetprotocol">
-              {/* Claro / oscuro / sistema, siempre visible (también en el móvil). */}
+              {/* Estrellas de GitHub en vivo y selector claro / oscuro / sistema (visibles también en el móvil). */}
+              <GitHubStars />
               <ThemeSwitch lite />
             </Navbar>
           }
           pageMap={await getPageMap()}
-          footer={<Footer>Apache-2.0 · {new Date().getFullYear()} · Signet Protocol. Games and their trademarks belong to their owners.</Footer>}
+          footer={
+            <Footer>
+              <div className="mv-pie">
+                <span>Apache-2.0 · {new Date().getFullYear()} · Signet Protocol. Games and their trademarks belong to their owners.</span>
+                <VisitorCounter />
+              </div>
+            </Footer>
+          }
           sidebar={{ defaultMenuCollapseLevel: 1 }}
           editLink={null}
           feedback={{ content: null }}

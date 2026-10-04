@@ -185,3 +185,150 @@ html.dark .mv-boton.principal:hover {
   display: block;
   font-size: 0.92rem;
 }
+
+/* Estrellas de GitHub (barra superior) */
+.mv-estrellas {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  height: 1.75rem;
+  padding: 0 0.6rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border: 1px solid var(--mv-linea);
+  border-radius: 0.375rem;
+  text-decoration: none !important;
+  transition: background 0.15s;
+}
+.mv-estrellas:hover {
+  background: var(--mv-suave);
+}
+.mv-estrellas b {
+  font-weight: 600;
+  padding-left: 0.4rem;
+  border-left: 1px solid var(--mv-linea);
+}
+
+/* Bloque de comunidad (portada) */
+.mv-comunidad {
+  margin: 1rem 0 1.5rem;
+}
+.mv-cifras {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+.mv-cifra {
+  flex: 1 1 8rem;
+  border: 1px solid var(--mv-linea);
+  border-radius: 0.6rem;
+  padding: 0.8rem 1rem;
+}
+.mv-cifra-valor {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.mv-cifra-valor svg {
+  width: 1rem;
+  height: 1rem;
+  opacity: 0.6;
+}
+.mv-cifra small {
+  opacity: 0.6;
+}
+.mv-avatares {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-top: 1rem;
+}
+.mv-avatares img {
+  border-radius: 9999px;
+  border: 1px solid var(--mv-linea);
+  filter: grayscale(1);
+  transition: filter 0.15s;
+}
+.mv-avatares a:hover img {
+  filter: none;
+}
+
+/* Pie de página con el contador de visitas */
+.mv-pie {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1.5rem;
+  width: 100%;
+}
+.mv-visitas {
+  font-size: 0.8rem;
+  font-variant-numeric: tabular-nums;
+  padding: 0.1rem 0.6rem;
+  border: 1px solid var(--mv-linea);
+  border-radius: 9999px;
+  text-decoration: none !important;
+  opacity: 0.8;
+}
+.mv-visitas:hover {
+  opacity: 1;
+}
+
+/* Página de estadísticas */
+.mv-stats h3 {
+  margin: 1.75rem 0 0.75rem;
+  font-size: 1rem;
+  font-weight: 600;
+}
+.mv-barras {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.35rem;
+  height: 9rem;
+  padding-bottom: 1.1rem;
+}
+.mv-barra {
+  position: relative;
+  flex: 1;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+}
+.mv-barra span {
+  display: block;
+  width: 100%;
+  background: currentColor;
+  opacity: 0.8;
+  border-radius: 0.2rem 0.2rem 0 0;
+}
+.mv-barra:hover span {
+  opacity: 1;
+}
+.mv-barra small {
+  position: absolute;
+  bottom: -1.1rem;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 0.65rem;
+  opacity: 0.55;
+}
+.mv-listas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: 0 2rem;
+}
+.mv-listas table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+.mv-listas td {
+  padding: 0.35rem 0;
+  border-bottom: 1px solid var(--mv-linea);
+}

@@ -36,7 +36,7 @@ docker build -f servidor/Dockerfile -t signet-server .
 docker run -d --name signet -p 7777:7777 -e SIGNET_WORLD=signet:nexo signet-server
 ```
 
-Read the documentation locally:
+Read the documentation online at **[signetprotocol.io](https://signetprotocol.io)**, or locally:
 
 ```bash
 cd docs && npm install && npm run dev   # http://localhost:3000

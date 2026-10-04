@@ -1,0 +1,42 @@
+---
+title: Contributing
+description: How to grow the project with translators, maps, engines and documentation.
+---
+
+import { Cards } from 'nextra/components'
+
+# Contributing
+
+The beta exists so the community can grow it. Every new translator multiplies the possible combinations for everyone.
+
+## What we need most
+
+| Contribution | Impact | Where to start |
+|---|---|---|
+| Map **importers** | Every player gets new worlds | [Write an importer](/guides/write-importer/) |
+| **Viewers** for more games and engines | More people can join | [Write a viewer](/guides/write-viewer/) |
+| **Gateways** for games with their own server | Closed games, but with an official server | [Write a gateway](/guides/gateway/) |
+| **Native worlds** | New maps every game can play | [Native worlds](/concepts/native-worlds/) |
+| **Game modes** | New ways to play in every world | `reglas` in the Rust SDK |
+| **Testing C# in Unity** | Unlocks Unturned and indie games | [C# / Unity](/sdk/csharp/) |
+| **Translating the documentation** | Reach more communities | the `docs/content` folder |
+
+## Before opening a PR
+
+1. `cargo test --release` passes in the whole workspace.
+2. Importers pass [conformance](/sdk/conformance/): T01–T07 and R01–R02.
+3. Translators include their `signet.json` and pass M01–M04.
+4. No game files are uploaded. See [principles](/legal/).
+
+## Protocol changes
+
+Protocol proposals are opened as an issue with the `protocol` label. They must explain the use case, the new fields with their default values, and how they affect existing translators. See [versioning](/protocol/versioning/).
+
+## License
+
+The whole SDK is **Apache-2.0**. By contributing you agree to publish your contribution under that license. Each translator can choose its own and declare it in its `signet.json`; for example, a viewer based on GPL code must be GPL.
+
+<Cards>
+  <Cards.Card title="The five layers" href="/concepts/layers/" arrow />
+  <Cards.Card title="Signet/1 protocol" href="/protocol/" arrow />
+</Cards>

@@ -1,0 +1,78 @@
+---
+title: C interface
+description: signet.h, the interface for engines written in C, C++, Godot or Unreal.
+---
+
+import { Callout } from 'nextra/components'
+
+# C interface · `signet.h`
+
+A native library (`signet.dll`, `libsignet.so`, `libsignet.dylib` or the static version) with a complete client: connection, terrain, bodies, events and **prediction included**. It is the door for ioquake3, Doom source ports, Godot (GDExtension), Unreal and any engine that can call C.
+
+<Callout type="info">
+No function blocks or throws. With a null pointer or no data yet, they return 0.
+</Callout>
+
+## Lifecycle
+
+| Function | |
+|---|---|
+| `const char *sg_version(void)` | SDK version |
+| `SgClient *sg_connect(const char *host, const char *game)` | connects in the background (`"host"` or `"host:port"`) |
+| `void sg_free(SgClient *c)` | closes and frees |
+| `int32_t sg_state(const SgClient *c)` | `SG_CONNECTING`, `SG_CONNECTED`, `SG_DISCONNECTED` |
+| `uint32_t sg_my_id(const SgClient *c)` | your id (0 = not yet) |
+
+## World
+
+| Function | |
+|---|---|
+| `int32_t sg_terrain_side(c)` | cells per side (0 = not arrived yet) |
+| `float sg_terrain_height(c, x, z)` | floor height |
+| `int32_t sg_terrain_walkable(c, x, z)` | 1 if a body can stand there |
+| `size_t sg_terrain_json(c, buf, cap)` | the whole terrain as JSON; returns the size needed |
+| `size_t sg_native_map_json(c, buf, cap)` | the native Signet map (lights, objects, sky); 0 if not native |
+
+```c
+size_t n = sg_terrain_json(c, NULL, 0);      /* size */
+char *json = malloc(n + 1);
+sg_terrain_json(c, json, n + 1);            /* contents, NUL-terminated */
+```
+
+## Bodies and events
+
+```c
+typedef struct SgPlayer {
+    uint32_t id;
+    float x, y, z, yaw;
+    int32_t health, ammo, frags;
+    uint8_t weapon, alive;
+    char game[16];
+} SgPlayer;
+```
+
+| Function | |
+|---|---|
+| `int32_t sg_players(c, SgPlayer *out, int32_t max)` | copies up to `max` and returns how many there are |
+| `size_t sg_events_json(c, buf, cap)` | events since the last call (JSON array); consumes them |
+
+## Input and prediction
+
+| Function | |
+|---|---|
+| `void sg_intent(c, forward, strafe, yaw, run, fire, weapon)` | current intent |
+| `int32_t sg_advance(c, dt, &x, &y, &z)` | predicts, sends and writes where to draw the feet |
+| `int32_t sg_spawn_yaw(c, &yaw)` | after a respawn, which way to look |
+| `uint32_t sg_corrections(c)` | prediction corrections (0 = everything agrees) |
+
+## Build and link
+
+```bash
+cargo build --release -p signet-ffi
+# Windows (MSVC)
+cl client.c /I crates\signet-ffi\include target\release\signet.dll.lib
+# Linux / macOS
+cc client.c -I crates/signet-ffi/include -L target/release -lsignet
+```
+
+The full example lives in `examples/c/client.c`. We tested it with MSVC against a real server: it joins, walks and sees every body, with 0 corrections.

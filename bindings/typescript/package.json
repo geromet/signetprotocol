@@ -1,0 +1,19 @@
+{
+  "name": "@signet/sdk",
+  "version": "0.1.0-beta.1",
+  "description": "Signet Protocol SDK for TypeScript/Node: Signet/1 protocol types and a client (no prediction in the beta).",
+  "license": "Apache-2.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc",
+    "example": "node dist/example.js"
+  },
+  "engines": { "node": ">=18" },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^5.6.0"
+  }
+}

@@ -1,0 +1,16 @@
+[package]
+name = "signet-server"
+description = "Signet Protocol dedicated server: loads a world (native Signet, Doom or OpenArena), simulates the game mode and listens on port 7777."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "servidor_dedicado"
+path = "src/main.rs"
+
+[dependencies]
+signet-sdk = { path = "../crates/signet-sdk" }
+serde_json = "1"
+# Mapas de OpenArena (los .pk3 son ZIP).
+zip = { version = "2", default-features = false, features = ["deflate"] }

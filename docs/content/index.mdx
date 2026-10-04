@@ -1,0 +1,72 @@
+---
+title: Signet Protocol
+description: Every game, one world.
+---
+
+import { Cards } from 'nextra/components'
+
+<div className="mv-hero">
+  <h1>Every game,<br/><span>one world.</span></h1>
+  <p>Signet Protocol is an open protocol and SDK that lets players with different games join the same world and play the same match. One joins with Doom, another with Minecraft, another with OpenArena, and each of them sees and controls it with their own game.</p>
+  <div className="mv-botones">
+    <a className="mv-boton principal" href="/getting-started/installation/">Get started</a>
+    <a className="mv-boton" href="/demos/">See the demos</a>
+    <a className="mv-boton" href="/concepts/principle/">How it works</a>
+    <a className="mv-boton" href="/protocol/">Signet/1 protocol</a>
+  </div>
+</div>
+
+## How it works, in one picture
+
+A **neutral server** owns the world, the rules and the bodies, and belongs to no game. Every player connects through a **translator**: the piece that converts between the neutral vocabulary and their game.
+
+```mermaid
+flowchart LR
+  subgraph S["Neutral server (authority)"]
+    M["World<br/>neutral terrain"]
+    R["Rules<br/>doom:deathmatch"]
+    C["Bodies, shots,<br/>damage, deaths"]
+  end
+  D["Player with Doom"] <-->|"intents / state"| S
+  MC["Player with Minecraft"] <-->|"intents / state"| S
+  OA["Player with OpenArena"] <-->|"intents / state"| S
+```
+
+Only **neutral data** goes over the wire: heights, positions, ids and events such as "shot" or "death". Never a game's files. Each translator draws that world with the textures, models and sounds of **the player's own copy of the game**.
+
+<div className="mv-galeria">
+  <figure><img src="/img/demos/nexo-doom.jpg" alt="Nexo in Doom" /><figcaption><b>Doom</b></figcaption></figure>
+  <figure><img src="/img/demos/nexo-openarena.jpg" alt="Nexo in OpenArena" /><figcaption><b>OpenArena</b></figcaption></figure>
+  <figure><img src="/img/demos/nexo-minecraft.jpg" alt="Nexo in Minecraft" /><figcaption><b>Minecraft</b></figcaption></figure>
+</div>
+
+<p style={{opacity: 0.8}}>The same spot of the native world Nexo, with the same players, in three games. More in the <a href="/demos/">demos</a>.</p>
+
+## What already works (beta 0.1)
+
+This is not just an idea: the beta comes out of a working prototype. In a single deathmatch, with 8 bots, these play at the same time:
+
+- **Doom**: a viewer with the original sector geometry, HUD, weapons and sounds from the player's WAD.
+- **OpenArena**: a viewer that draws the original BSP maps, with Bézier curves, baked lighting and MD3 models.
+- **Minecraft Java**: a gateway that builds the world with blocks on a local official server and translates movement and clicks.
+- **Signet**: the platform's own viewer, which draws native Signet worlds with every detail.
+
+The server also hosts **Doom and OpenArena maps** and **native Signet worlds**: a Minecraft player can walk through `oa_dm1` built from blocks while someone else sees it with Doom textures.
+
+<Cards>
+  <Cards.Card title="Install the SDK" href="/getting-started/installation/" arrow />
+  <Cards.Card title="Your first client in 20 lines" href="/getting-started/first-client/" arrow />
+  <Cards.Card title="The five layers: world, rules, viewer, appearance, input" href="/concepts/layers/" arrow />
+  <Cards.Card title="Write a translator" href="/guides/write-viewer/" arrow />
+</Cards>
+
+## The SDK
+
+| Part | What for | Status |
+|---|---|---|
+| **Rust** `signet-sdk` | Reference core: protocol, rules, prediction, client, native worlds, translators and conformance | beta |
+| **C** `signet.h` | Any engine in C/C++: ioquake3, Doom source ports, Unreal, Godot | beta |
+| **C#** `Signet.cs` | Unity and .NET, on top of the C interface | preview |
+| **TypeScript** `@signet/sdk` | Bots, observers, directories and web tools | preview |
+
+<p style={{opacity: 0.7, fontSize: '0.9rem'}}>Signet Protocol is not affiliated with id Software, Mojang, Microsoft or the authors of OpenArena. Every game and trademark belongs to its owner.</p>

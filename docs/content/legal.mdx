@@ -1,0 +1,41 @@
+---
+title: Principles and legal
+description: What Signet does and does not do with other people's games.
+---
+
+import { Callout } from 'nextra/components'
+
+# Principles and legal
+
+Signet only works if it respects players and studios. These principles are non-negotiable: every contribution is reviewed against them.
+
+## 1. Only neutral data travels
+
+Heights, positions, ids and events go over the wire. **Never a game's files**: no textures, models, sounds or maps in their original format.
+
+## 2. Every player uses their own copy
+
+Translators read the files of **the player's own** installation. A player without Doom cannot use the Doom viewer; they can use another viewer. Neither the SDK nor the servers include third-party content.
+
+A server may host maps whose license allows redistribution. For example, the Doom 1.9 shareware can be redistributed unmodified and OpenArena is GPL. The Docker image downloads them from their official sources and verifies their checksums. Native Signet worlds are published under open licenses (CC0 or CC-BY).
+
+## 3. No injection into online games
+
+We do not inject code into online games, bypass anti-cheat, automate accounts on third-party servers or modify official servers. Valid integrations are:
+
+- **open-source** engines,
+- **mods** the game officially allows,
+- **gateways** over servers controlled by whoever runs them,
+- **reimplementations** that read known file formats from the player's copy.
+
+## 4. Trademarks belong to their owners
+
+A translator can say which game it is compatible with, but it cannot present itself as official or use logos without permission. Modes inspired by other games are written from scratch and get generic names: `souls:duel`, not the game's name. "Signet Protocol" is itself a trademark of its owner.
+
+## 5. Closed games, with their studio
+
+If a game could only be integrated by breaking its terms, the answer is **to propose it to its studio**, not to force it. That is what the studio edition of the SDK is for.
+
+<Callout type="info">
+This is not legal advice. If your translator raises questions, especially with unclear licenses or EULAs, open it as a proposal before writing code. The community will review it with you.
+</Callout>

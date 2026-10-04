@@ -1,0 +1,90 @@
+---
+title: The five layers
+description: World, rules, viewer, appearance and input; what the server decides, what each player chooses and how they combine.
+---
+
+import { Callout } from 'nextra/components'
+
+# The five layers
+
+So that any game can combine with any other, Signet splits a match into **five independent layers**. The server decides the first two, and they are the same for everyone. Each player chooses the other three.
+
+<div className="mv-capas">
+  <div className="mv-capa"><b>1 · World</b><small>Geometry and collision: walls, floors, ceilings, water, spawn points.</small><span className="mv-quien servidor">server</span></div>
+  <div className="mv-capa"><b>2 · Rules</b><small>Mechanics: how a body moves, which weapons exist, how a shot resolves, how much health there is.</small><span className="mv-quien servidor">server</span></div>
+  <div className="mv-capa"><b>3 · Viewer</b><small>The engine that draws: Doom, OpenArena, Minecraft, Unity…</small><span className="mv-quien">each player</span></div>
+  <div className="mv-capa"><b>4 · Appearance</b><small>Which textures, models and sounds paint the world.</small><span className="mv-quien">each player</span></div>
+  <div className="mv-capa"><b>5 · Input and feel</b><small>Controls, camera, animations, rumble. It does not change physics.</small><span className="mv-quien">each player</span></div>
+</div>
+
+## What each layer is
+
+### 1. World (server)
+
+The **neutral terrain**: a grid of 1 m cells with the floor height, the ceiling height, whether the sky is visible, whether it is a wall and what material it is made of. It can come from a Doom map (`doom:E1M1`), from OpenArena (`openarena:oa_dm1`), from Minecraft, from any game with an [importer](/concepts/translators/), or it can be a [native Signet world](/concepts/native-worlds/) (`signet:nexo`). It is what makes everyone bump into the same walls. See [the neutral world](/concepts/neutral-world/).
+
+### 2. Rules (server)
+
+The **game mode**: speed, maximum step height, weapons, damage and respawn. The beta has one mode, `doom:deathmatch`, with values from Doom's source code (GPL). The server runs it with authority and every client runs **the same code** to predict its own movement.
+
+<Callout type="warning">
+Rules must be the same for everyone. If one player ran faster because "that is how their game works", the match would no longer be fair. That is why physical movement belongs to the server's rules, not to each player's game.
+</Callout>
+
+### 3. Viewer (player)
+
+The **engine** you play with. A viewer receives the terrain and turns it into something its engine can draw: sectors in Doom, BSP surfaces in OpenArena, blocks in Minecraft. If the world came from its own game (the `fuente` field starts with its prefix), it can load the original map instead of translating it. We call that **native mode**.
+
+### 4. Appearance (player)
+
+The world's **skin**, separate from the engine that draws it. There are three options:
+
+| Appearance | Example | Status |
+|---|---|---|
+| **From the viewer** | Doom viewer: `oa_dm1` with Doom textures | works |
+| **From the world** (native) | OpenArena viewer: `oa_dm1` with its original textures | works |
+| **From a third game** | Minecraft viewer: `oa_dm1` with OpenArena textures | in design |
+
+### 5. Input and feel (player)
+
+How playing **feels**: control layout, field of view, camera, weapon or character animations, controller rumble. It is presentation only, so it can differ for each player without breaking the match.
+
+## Combinations
+
+The whole point of separating the layers is that **they combine freely**. Each row of this table is a possible match:
+
+| World | Rules | Viewer | Appearance | Possible? |
+|---|---|---|---|---|
+| OpenArena `oa_dm1` | `doom:deathmatch` | Doom | Doom | ✅ works |
+| OpenArena `oa_dm1` | `doom:deathmatch` | OpenArena | OpenArena (native) | ✅ works |
+| OpenArena `oa_dm1` | `doom:deathmatch` | Minecraft | Minecraft (blocks) | ✅ works |
+| Doom `E1M1` | `doom:deathmatch` | OpenArena | OpenArena | ✅ works |
+| Signet `nexo` | `doom:deathmatch` | Signet | Signet (native) | ✅ works |
+| OpenArena `oa_dm1` | `doom:deathmatch` | Minecraft | **OpenArena** | 🧪 in design |
+| OpenArena `oa_dm1` | **`souls:duel`** (roll, stamina, lock-on) | Minecraft | Minecraft | 🧪 needs a new mode |
+| OpenArena `oa_dm1` | `souls:duel` | **Elden Ring** | **Minecraft** | 🔒 needs an official partner |
+
+### "Minecraft viewer, OpenArena world, OpenArena textures"
+
+Minecraft draws blocks, but the textures of those blocks can be changed with a resource pack. An **appearance translator** would do this:
+
+1. Read the textures from **the player's own OpenArena installation** (`.pk3` files are ZIPs; textures are TGA/JPG).
+2. Group the world by neutral material (`core:metal`, `core:piedra`…) or, better, by each face's original texture.
+3. Generate a resource pack on the player's PC that paints one block per texture, and tell the gateway which block goes in each cell.
+
+The geometry would still be blocks, but the walls would look like OpenArena. **No file travels**: the pack is generated on, and stays on, the player's PC.
+
+### "Minecraft viewer with Elden Ring movement"
+
+Two things need to be separated here:
+
+- **Movement physics** (rolling with invulnerability frames, stamina, lock-on) are **rules**. To be fair, the whole match would need a mode that includes them, something like `souls:duel`: a new mode written from scratch, inspired by that combat style, with no code or files from any game.
+- **Animations and camera** are **feel**. The Minecraft translator could show the roll, the stamina bar or the lock-on camera with whatever Minecraft allows.
+
+### "Elden Ring viewer with Minecraft textures in the OpenArena world"
+
+It fits the layer model technically, but today **it cannot be done properly**. Elden Ring is a closed engine with no official modding tools, and its online mode has anti-cheat. Injecting code into an online game goes against its terms and against [our principles](/legal/). The right path is for the studio to publish a translator or an official SDK. That is what the [studio edition](/engines/#three-editions-of-the-sdk) is for.
+
+<Callout type="info">
+**The general rule:** any combination of layers is possible if there is a legitimate translator for each layer. Open engines and games with allowed mods can join today. Closed games need their studio on board.
+</Callout>

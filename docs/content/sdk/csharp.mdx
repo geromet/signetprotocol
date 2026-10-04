@@ -1,0 +1,50 @@
+---
+title: C# / Unity
+description: C# binding over the C interface, for Unity and .NET.
+---
+
+import { Callout } from 'nextra/components'
+
+# C# / Unity · `Signet.cs`
+
+<Callout type="warning">
+**Preview.** The binding is a single P/Invoke file over the [C interface](/sdk/c/). Its API is defined, but it has not been tested in Unity or .NET yet. Test reports are very welcome.
+</Callout>
+
+## Installation
+
+1. Build the native library: `cargo build --release -p signet-ffi`.
+2. Copy `bindings/csharp/Signet.cs` into your project.
+3. Put `signet.dll` (Windows), `libsignet.so` (Linux) or `libsignet.dylib` (macOS) next to the executable. In Unity it goes in `Assets/Plugins/x86_64/`.
+
+## API
+
+```csharp
+using Signet;
+
+using var c = new Client("192.168.1.212", "unity");
+c.Intent(forward: 1, strafe: 0, yaw: 0, run: false, fire: false, Weapon.Pistol);
+if (c.Advance(dt, out var x, out var y, out var z)) { /* draw */ }
+foreach (var p in c.Players()) { /* p.Id, p.X, p.Y, p.Z, p.Game, p.Alive… */ }
+string events = c.TakeEventsJson();
+string terrain = c.TerrainJson();
+string nativeMap = c.NativeMapJson();   // null unless the world is signet:*
+```
+
+| Member | |
+|---|---|
+| `Client.SdkVersion` | version of the native library |
+| `State`, `MyId`, `TerrainSide`, `Corrections` | properties |
+| `Height(x, z)`, `Walkable(x, z)` | terrain queries |
+| `TerrainJson()`, `NativeMapJson()`, `TakeEventsJson()` | Signet/1 JSON (parse it with `JsonUtility` or `System.Text.Json`) |
+| `Players()` | `ArraySegment<Player>` (no allocation per frame) |
+| `Intent(...)`, `Advance(...)`, `SpawnYaw(...)` | input and prediction |
+
+## Axes in Unity
+
+Unity is left-handed and Signet's north is −z. Flip `z` and the sign of `yaw` when drawing:
+
+```csharp
+transform.position = new Vector3(x, y + 1.3f, -z);
+transform.rotation = Quaternion.Euler(0, -yaw * Mathf.Rad2Deg, 0);
+```

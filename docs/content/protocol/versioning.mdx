@@ -1,0 +1,30 @@
+---
+title: Versioning and compatibility
+description: How Signet/1 evolves without breaking existing translators.
+---
+
+# Versioning and compatibility
+
+## Signet/1 rules
+
+1. **Only optional fields are added**, each with an explicit default. A client from the first beta must be able to talk to a server from the latest one, and vice versa.
+2. **Unknown fields are ignored.** Readers must not fail because there are extra fields.
+3. **Names do not change.** The Signet/1 vocabulary is in Spanish (`Intencion`, `avance`, `techo`…) and stays that way. An English vocabulary is planned for Signet/2.
+4. A breaking change (removing a field, changing its type or meaning) **requires Signet/2** and a proposal approved by the community.
+
+## History
+
+| Change | Fields | Compatibility |
+|---|---|---|
+| Initial Signet/1 | basic terrain, `Hola`, `Posicion`, `Estado` | — |
+| Interiors | `Terreno.fuente`, `techo`, `solido`, `material`, `paleta`, `luz`, `apariciones` | optional |
+| Combat | `Intencion`, `Evento`, `JugadorNet.vida/arma/municion/frags/vivo/yaw`, `Bienvenida.version/modo` | optional |
+| Real sky | `Terreno.cielo` | optional; without it, `techo == 32767` means sky |
+| Numbered commands | `Intencion.seq`, `JugadorNet.seq` | optional; `seq = 0` works as before |
+| Native worlds | `Bienvenida.mapa`, `fuente = "signet:<id>"` | optional; the legacy prefix `multiverso:` is still accepted |
+
+## When versions do not match
+
+- The client warns if `Bienvenida.version` differs from its own, but keeps playing.
+- A new client on a server without `seq` notices that its commands are never confirmed and only predicts a few ticks ahead (`Desincronia::legado`).
+- An older adapter that sends `Intencion` without `seq` to a new server still works: the latest intent is applied every tick.

@@ -1,0 +1,109 @@
+---
+title: Messages
+description: Reference of every Signet/1 message, with examples.
+---
+
+import { Callout } from 'nextra/components'
+
+# Messages
+
+Fields marked *optional* may be missing. Readers must use the default shown.
+
+## Client to server (`DelCliente`)
+
+### `Hola` (hello)
+
+The first message of every connection.
+
+```json
+{"Hola":{"juego":"minecraft","version":1}}
+```
+
+| Field | Type | |
+|---|---|---|
+| `juego` (game) | text | id of the translator's game; `"observador"` = no body |
+| `version` | integer | protocol version the client speaks *(optional, 0)* |
+
+### `Intencion` (intent)
+
+What the player wants to do. With `seq > 0`, each command is worth **one tick** and the server applies it exactly once (see [authority and networking](/concepts/networking/)).
+
+```json
+{"Intencion":{"avance":1.0,"lateral":0.0,"yaw":1.57,"correr":true,"disparar":false,"usar":false,"arma":1,"seq":1042}}
+```
+
+| Field | Type | |
+|---|---|---|
+| `avance` (forward) | number −1…1 | forward (+) / backward (−) |
+| `lateral` (strafe) | number −1…1 | right (+) / left (−) |
+| `yaw` | radians | look direction; 0 = north (−z), positive turns left |
+| `correr` (run) | bool | doubles the speed |
+| `disparar` (fire) | bool | holds the trigger; the server enforces the weapon's fire rate |
+| `usar` (use) | bool | reserved (doors, buttons) |
+| `arma` (weapon) | integer | 0 fist · 1 pistol · 2 shotgun |
+| `seq` | integer | command number, increasing *(optional, 0 = unnumbered)* |
+
+### `Posicion` (position)
+
+For gateways that only know the player's position. The server accepts it if it is walkable and decides the height.
+
+```json
+{"Posicion":{"x":3.5,"z":-12.25}}
+```
+
+<Callout type="warning">
+`Posicion` skips the movement rules and only exists for compatibility. New translators should use `Intencion`.
+</Callout>
+
+## Server to client (`DelServidor`)
+
+### `Bienvenida` (welcome)
+
+Once, on connection.
+
+```json
+{"Bienvenida":{"tu_id":104,"version":1,"modo":"doom:deathmatch","terreno":{"origen":[0,0,0],"lado":40,"alturas":[…],"agua":[…],"nivel_mar":-10,"fuente":"signet:nexo","techo":[…],"solido":[…],"material":[…],"paleta":["core:pared","core:piedra"],"luz":[…],"apariciones":[[-5.5,-13.5],[5.5,-13.5]],"cielo":[…]},"mapa":{…}}}
+```
+
+| Field | Type | |
+|---|---|---|
+| `tu_id` (your id) | integer | id of your body in `Estado.jugadores` |
+| `terreno` (terrain) | [Terreno](/concepts/neutral-world/#terrain-layers) | the whole world |
+| `version` | integer | server protocol version *(optional, 0)* |
+| `modo` (mode) | text | game mode rules *(optional, "")* |
+| `mapa` (map) | [native map](/concepts/native-worlds/) | only for `signet:*` worlds: lights, objects, sky *(optional)* |
+
+### `Estado` (state)
+
+One snapshot per tick with **every** body, bots included, and that tick's events.
+
+```json
+{"Estado":{"jugadores":[{"id":104,"pos":[3.2,0.0,-11.8],"juego":"minecraft","yaw":1.6,"vida":85,"armadura":0,"arma":1,"municion":47,"frags":2,"vivo":true,"seq":1040}],"eventos":[{"Disparo":{"de":104,"arma":1,"desde":[3.2,1.3,-11.8],"hasta":[3.2,1.3,-30.0]}}]}}
+```
+
+`JugadorNet` (network player):
+
+| Field | Type | |
+|---|---|---|
+| `id` | integer | 1–8 are bots in the beta; players start at 100 |
+| `pos` | `[x, y, z]` | feet position |
+| `juego` (game) | text | which game it joined with (`"bot"` for bots) |
+| `yaw` | radians | *(optional, 0)* |
+| `vida` / `armadura` (health / armour) | 0–100 | each translator maps it to its own scale: hearts, percentage… *(optional, 0)* |
+| `arma` / `municion` (weapon / ammo) | integer | current weapon and its ammo *(optional, 0)* |
+| `frags` | integer | *(optional, 0)* |
+| `vivo` (alive) | bool | *(optional, **true**)* |
+| `seq` | integer | last command of this player that the server applied *(optional, 0)* |
+
+## Events (`Evento`)
+
+| Event | Fields | What each translator does |
+|---|---|---|
+| `Disparo` (shot) | `de` (by), `arma`, `desde` (from) `[x,y,z]`, `hasta` (to) `[x,y,z]` | weapon sound, muzzle flash, impact where the shot ended |
+| `Danio` (damage) | `a` (to), `de` (by), `cantidad` (amount), `desde` (from) `[x,y,z]` | pain, direction indicator, particles |
+| `Muerte` (death) | `victima` (victim), `autor` (killer), `arma` | death animation, kill feed message |
+| `Reaparicion` (respawn) | `id` | spawn effect; the gateway repositions the player |
+
+```json
+{"Muerte":{"victima":3,"autor":104,"arma":2}}
+```

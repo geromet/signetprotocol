@@ -1,0 +1,63 @@
+---
+title: Write a viewer
+description: Draw the Signet world with your engine and your assets.
+---
+
+import { Callout, Steps } from 'nextra/components'
+
+# Write a viewer
+
+A viewer is what the player sees: it implements `TraductorMundo` (world), `TraductorPresentacion` (presentation) and usually `TraductorEntrada` (input). It can be a reimplementation (a program that reads the game's files) or live inside the engine (a fork or a mod).
+
+<Steps>
+
+### Connect and wait for the terrain
+
+```rust
+let mut c = Cliente::conectar(host, "mygame");
+// in your loop: when c.terreno() is Some, build the scene once
+```
+
+### Build the scene (`TraductorMundo`)
+
+Walk the grid. For every walkable cell:
+
+- **Floor** at height `alturas[k]`, with its material's texture.
+- **Ceiling** at `techo[k]` unless it is sky.
+- **Walls** on every edge towards a solid or higher cell. They go from this floor up to the neighbour's floor or, if it is a wall, up to its height.
+- **Upper walls** where the neighbour's ceiling is higher than this one. That is how the façades of open-sky areas are drawn.
+
+If `terreno.fuente` starts with your game's prefix, **you can load the original map** from the player's installation instead of translating. Use `terreno.origen` to align it: it is the point of the original map that corresponds to neutral `(0, 0, 0)`. For `signet:*` worlds, `c.mapa()` also gives you the native lights, objects and sky.
+
+### Move the camera (`TraductorEntrada` + prediction)
+
+```rust
+c.fijar_intencion(Intencion { avance, lateral, yaw, correr, disparar, arma, ..Default::default() });
+if let Some([x, y, z]) = c.avanzar(dt) {
+    camera.place(x, y + reglas::doom::ALTURA_OJOS, z, yaw, pitch);
+}
+```
+
+Pitch (looking up and down) is camera-only: in `doom:deathmatch` shots are horizontal, as in Doom.
+
+### Draw bodies and events (`TraductorPresentacion`)
+
+- Every `JugadorNet` with `vivo` (alive) is drawn with one of your game's models, depending on its `juego`. The beta viewers use one model for bots and another for players.
+- Your own body (`mi_id`) is usually not drawn in first person.
+- `Disparo` (shot) → weapon sound and impact effect at `hasta`. `Danio` (damage) → pain and red screen if it is yours. `Muerte` (death) → animation and message. `Reaparicion` (respawn) → effect.
+
+### Show the HUD
+
+Health, ammo, weapon and frags come in your `JugadorNet`. Map them to your game's scale: percentage in Doom, hearts in Minecraft.
+
+</Steps>
+
+<Callout type="info">
+**Look at the smallest one first.** `examples/visor_ascii.rs` is a complete viewer in the terminal, in about 60 lines. The reference Bevy client (Doom, OpenArena, Minecraft and Signet viewers in one app) lives in the prototype repository.
+</Callout>
+
+## Tips
+
+- **Axes:** Signet/1 uses y up, north at −z and positive `yaw` to the left. In left-handed engines (Unity, Unreal), flip `z` and the sign of `yaw` when drawing.
+- **Interpolation:** `avanzar` already interpolates your own body. Other bodies arrive in a snapshot 20 times per second: interpolate them yourself between the last two.
+- **On spawn:** use `tomar_yaw_aparicion()` so you do not start facing a wall.

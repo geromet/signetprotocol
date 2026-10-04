@@ -1,0 +1,9 @@
+[workspace]
+resolver = "2"
+members = ["crates/signet-sdk", "crates/signet-ffi", "servidor"]
+
+# The public repository will be added once it exists (`repository = "..."`).
+[workspace.package]
+version = "0.1.0-beta.1"
+edition = "2024"
+license = "Apache-2.0"

@@ -1,0 +1,73 @@
+---
+title: Conformance suite
+description: The checks an importer or translator must pass before publishing.
+---
+
+# Conformance suite
+
+For a translator to work with all the others, it has to honour the contract. The suite checks it automatically, with **stable codes** you can cite in issues and CI.
+
+## How to run it
+
+```bash
+# A terrain exported by your importer
+cargo run --release --example conformidad -- my_map.json
+
+# The terrain served by a running server
+cargo run --release --example conformidad -- --servidor 192.168.1.212
+```
+
+```text
+signet:nexo: 40x40 cells, 8 spawn points
+CONFORMANT: passes T01–T07 and R01–R02
+```
+
+Or from your tests:
+
+```rust
+use signet_sdk::conformidad::{comprobar_terreno, comprobar_reglas, comprobar_manifiesto};
+
+#[test]
+fn my_importer_is_conformant() {
+    let t = MyImporter.importar("map1").unwrap();
+    assert!(comprobar_terreno(&t).is_empty());   // terrain checks
+    assert!(comprobar_reglas(&t).is_empty());    // rules checks
+}
+```
+
+## Codes
+
+### Terrain
+
+| Code | Checks |
+|---|---|
+| **T01** | Every layer has `side²` cells, or is empty if optional. `agua` (water) is mandatory |
+| **T02** | `fuente` has the form `game:map` |
+| **T03** | `material` indices are within `paleta` and every material is namespaced (`core:piedra`) |
+| **T04** | Every spawn point is inside the map and on a walkable cell |
+| **T05** | On walkable cells, the ceiling is above the floor |
+| **T06** | There is at least one walkable cell |
+| **T07** | The terrain survives a JSON round trip unchanged |
+
+### Rules
+
+| Code | Checks |
+|---|---|
+| **R01** | Movement is deterministic: the same commands always give the same result |
+| **R02** | From every spawn point a body can walk at least 1 m in some direction |
+
+### Translator manifest
+
+| Code | Checks |
+|---|---|
+| **M01** | It speaks a supported protocol version |
+| **M02** | The version is semver |
+| **M03** | It declares at least one capability |
+| **M04** | The game id is lowercase, with no spaces or `:` |
+
+## Upcoming codes
+
+Planned for the next beta:
+
+- **R03**: no dead-end pits. Today a Quake map can have pits you escape by jumping, and `doom:deathmatch` has no jump.
+- **P01–P03**: presentation. Every event gets a visible or audible response, and axes are correctly oriented.

@@ -1,0 +1,79 @@
+---
+title: Write an importer
+description: Turn your game's maps into neutral terrain so any server can host them.
+---
+
+import { Callout, Steps } from 'nextra/components'
+
+# Write an importer
+
+An importer turns a map from your game into a `Terreno` (terrain). It is the most direct way to contribute: as soon as it exists, **any player, with any game, can play on your maps**.
+
+<Steps>
+
+### Implement `Importador`
+
+```rust
+use signet_sdk::protocolo::{SIN_TECHO, Terreno};
+use signet_sdk::traductor::Importador;
+
+struct MyGame { folder: std::path::PathBuf }
+
+impl Importador for MyGame {
+    fn juego(&self) -> &str { "mygame" }                       // game id
+    fn mapas(&self) -> Vec<String> { /* list the installed maps */ vec![] }
+    fn importar(&self, map: &str) -> Result<Terreno, String> {  // import
+        // 1. Read the map from the installation (the player's or the server's).
+        // 2. Choose the origin: usually the first spawn point.
+        // 3. Walk a 1 m grid and, in each column, decide floor, ceiling and whether it is a wall.
+        todo!()
+    }
+}
+```
+
+### Choose the scale and the origin
+
+Convert your game's units to metres. Doom and Quake use 32 units per metre. Use a spawn point as the neutral origin, so `(0, 0)` is walkable, and store it in `Terreno.origen` in the original units. That lets a native viewer align the original map with the terrain.
+
+### Probe columns
+
+For each cell, decide:
+
+- **Can a body stand here?** There must be a floor and, above it, room for a person: 1.75 m.
+- **Floor height** and **ceiling height**, in whole metres relative to the origin's floor.
+- **Sky?** If the sky is above, set `cielo = true` but keep the real height in `techo`, so viewers know how high the façades go.
+- **Neutral material:** classify by texture name or by material properties.
+
+Cells that are not walkable are marked `solido = true`, and their height is that of the **tallest neighbouring ceiling**, so viewers raise walls all the way up.
+
+### Watch out for leaks
+
+A wall thinner than a cell can vanish from the grid and leave a leak into the void. The Doom importer **seals** the void-side cell of every one-sided wall when its centre falls on that side, and then discards the cells and spawn points that cannot be reached from the start.
+
+### Pass conformance
+
+```bash
+# export the terrain to JSON from your importer, then:
+cargo run --release --example conformidad -- my_map.json
+```
+
+</Steps>
+
+<Callout type="info">
+**Real examples.** `servidor/src/doom.rs` (Doom WAD, BSP tree, leak sealing) and `servidor/src/quake3.rs` (Quake III BSP, brush probing, sky, materials) are complete importers in use in the beta.
+</Callout>
+
+## How Quake III probing works
+
+The OpenArena importer does not rasterise polygons: it asks the **BSP tree** what is at each point. It walks down columns in steps of 8 units and, at each point, descends the tree to a leaf and checks its brushes, the solid volumes the engine itself collides with.
+
+```text
+for every cell (x, z):
+  samples  = [contents(x, z, h) for h in min..max step 8]
+  floor    = the first solid sample with 56 free units above it
+  ceiling  = the next solid sample above the floor
+  sky      = does that brush have any face with SURF_SKY?
+  material = texture of the top face of the floor's brush
+```
+
+That way the neutral terrain's collision matches the original game's, apart from the 2.5D limitation.

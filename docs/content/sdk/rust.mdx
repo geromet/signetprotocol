@@ -1,0 +1,84 @@
+---
+title: Rust SDK
+description: Reference of the signet-sdk crate.
+---
+
+import { Callout } from 'nextra/components'
+
+# Rust SDK · `signet-sdk`
+
+The reference core. The other interfaces (C, C#) are built on top of it, and the dedicated server uses its `protocolo` and `reglas` modules: **the same code decides on the server and predicts on the client**.
+
+<Callout type="info">
+The Rust identifiers mirror the Signet/1 wire vocabulary, so they are in Spanish. The tables below give the English meaning of each one.
+</Callout>
+
+| Module | Meaning | Contents |
+|---|---|---|
+| `protocolo` | protocol | Signet/1 types: `Terreno` (terrain), `Intencion` (intent), `JugadorNet`, `Evento`, `DelCliente`, `DelServidor`, `enviar()` (send) |
+| `reglas` | rules | `TIC` (1/20 s) and the `reglas::doom` mode (`"doom:deathmatch"`) |
+| `prediccion` | prediction | `Prediccion`, `Desincronia` (desync), `orientacion_despejada()` |
+| `cliente` | client | `Cliente`: background connection, prediction and sending |
+| `mundo` | world | native worlds: `Mapa`, `ConstructorMapa`, `.mvm` format, `incluido()` |
+| `traductor` | translator | `Importador`, `TraductorMundo`, `TraductorEntrada`, `TraductorPresentacion` and the `Manifiesto` |
+| `conformidad` | conformance | `comprobar_terreno`, `comprobar_reglas`, `comprobar_manifiesto` |
+
+## `cliente::Cliente`
+
+```rust
+let mut c = Cliente::conectar("192.168.1.212", "my-game");   // never blocks; retries on its own
+```
+
+| Method | Meaning | Returns |
+|---|---|---|
+| `estado()` | connection state | `EstadoConexion`: `Conectando`, `Conectado` or `Desconectado` |
+| `aviso()` | last notice | `String`, human readable |
+| `terreno()` | terrain | `Option<Arc<Terreno>>`, once the welcome arrives |
+| `mapa()` | native map | `Option<Arc<Mapa>>` for `signet:*` worlds |
+| `modo()` | game mode | `String` |
+| `mi_id()` / `yo()` | my id / me | `Option<u32>` / `Option<JugadorNet>` |
+| `jugadores()` | players | `Vec<JugadorNet>`, latest snapshot, bots included |
+| `tomar_eventos()` | take events | `Vec<Evento>` since the last call |
+| `fijar_intencion(i)` | set intent | — |
+| `avanzar(dt)` | advance | `Option<[f32; 3]>`: predicts, sends and returns where to draw the feet |
+| `tomar_yaw_aparicion()` | take spawn yaw | `Option<f32>`: after a respawn, which way to look |
+| `desincronia()` | desync | `&Desincronia`, prediction metrics |
+
+<Callout type="info">
+Call `avanzar` **once per frame** with the real elapsed time. Internally it creates one command for each elapsed 1/20 s tick, so it behaves the same at 30 or 240 FPS.
+</Callout>
+
+## `prediccion::Prediccion`, if you already have your own networking
+
+```rust
+let mut pred = Prediccion::default();
+let mut outgoing = Vec::new();
+let f = pred.avanzar(&terrain, &me_according_to_server, &intent, dt, &mut outgoing);
+for command in outgoing { my_network.send(DelCliente::Intencion(command)); }
+if let Some(pos) = f.posicion { /* draw */ }
+if f.reaparece { /* just respawned: reorient the camera */ }
+```
+
+## `reglas::doom`
+
+| Item | Value |
+|---|---|
+| `VELOCIDAD_ANDAR` / `VELOCIDAD_CORRER` (walk / run speed) | 9 / 18 m/s |
+| `RADIO` (radius) | 0.5 m |
+| `ALTURA_OJOS` (eye height) | 1.3 m |
+| `PASO_MAX` (max step) | 1 m |
+| `mover(t, pos, y, intent, dt)` | movement with collision, in sub-steps of ≤ 10 cm |
+| `cabe(t, x, z, y)` | whether the body fits there coming from height `y` |
+| `hasta_pared(t, from, y, dir, range)` | distance to the first wall (shots and line of sight) |
+| `arma(id)` / `arma_zombi()` | damage, pellets, spread, range and fire rate |
+
+## Included examples
+
+```bash
+cargo run --release --example cliente_minimo -- <host> [seconds]   # joins, walks and reports
+cargo run --release --example visor_ascii    -- <host>              # a viewer in the terminal
+cargo run --release --example conformidad    -- <terrain.json> | --servidor <host>
+cargo run --release --example crear_nexo                            # builds the Nexo native world
+```
+
+`visor_ascii` is the smallest possible translator: it implements `TraductorMundo` (terrain → characters) and `TraductorPresentacion` (bodies → letters) in about 60 lines. It is a good starting point to understand the structure.

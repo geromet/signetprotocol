@@ -1,0 +1,44 @@
+---
+title: Roadmap
+description: What comes after the beta, and the known limitations.
+---
+
+# Roadmap
+
+## Beta 0.1 (now)
+
+- ✅ Signet/1 protocol with numbered commands and reconciliation
+- ✅ `doom:deathmatch` mode with bots
+- ✅ Doom and OpenArena importers; Doom, OpenArena, Minecraft and Signet viewers
+- ✅ Native Signet worlds (`.mvm` format) and the first one, Nexo
+- ✅ SDK in Rust and C; C# and TypeScript in preview
+- ✅ Conformance suite T01–T07, R01–R02 and M01–M04
+
+## Beta 0.2
+
+- **A separate appearance layer:** appearance translators that generate assets on the player's PC. The first would be a Minecraft resource pack built from the player's own OpenArena installation.
+- **Jumping and pits:** the `doom:deathmatch` mode has no jump, so some Quake III pits cannot be escaped. A `quake:deathmatch` mode with jumping and the R03 conformance code will follow.
+- **Numbered commands in the Minecraft gateway**, so it gets prediction like the other translators.
+- **Map items:** weapons, ammo, health packs and doors that open.
+- Publishing on crates.io and npm, and prebuilt packages of the C library.
+
+## 0.3 and beyond
+
+- **Signet/2:** an English wire vocabulary, with a compatibility layer for Signet/1.
+- **Layered (3D) terrain:** several floors per cell, for walkways and multi-storey buildings.
+- **New modes:** `souls:duel` (roll, stamina, lock-on), racing and building.
+- **Federated server directories:** anyone can publish a directory, and launchers combine several.
+- **Rule-based anti-cheat:** the server already rejects impossible movement. Command-rate limits and per-player line-of-sight validation are still missing.
+- **Studio programme:** an official SDK and certification for closed games.
+
+## Known limitations
+
+| Limitation | Effect | Plan |
+|---|---|---|
+| 2.5D terrain | A walkway above a room becomes ceiling | Layered terrain (0.3) |
+| No jumping | Dead-end pits in Quake III maps | `quake:deathmatch` (0.2) |
+| Horizontal shots | You cannot aim up or down, as in Doom | A mode with 3D aiming |
+| OpenArena shaders | Some shader-based textures (glass, effects) render white | A basic shader interpreter |
+| Minecraft gateway without `seq` | More corrections than native clients | 0.2 |
+| C# untested in Unity | Possible marshalling bugs | Community testing |
+| Spanish wire vocabulary | Field names like `avance` or `techo` | Signet/2 |

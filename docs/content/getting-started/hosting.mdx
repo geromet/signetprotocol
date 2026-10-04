@@ -1,0 +1,56 @@
+---
+title: Host a server
+description: The Signet dedicated server in Docker, with native, Doom or OpenArena worlds.
+---
+
+import { Callout, Steps } from 'nextra/components'
+
+# Host a server
+
+The dedicated server has no window and no GPU: it is a single Rust binary that loads a world, simulates the game mode at 20 Hz and listens on **TCP port 7777**. The easiest way to run it is Docker.
+
+<Steps>
+
+### Build the image
+
+From the root of the `signet-sdk` repository (the server uses the SDK's own protocol and rules):
+
+```bash
+docker build -f servidor/Dockerfile -t signet-server .
+```
+
+The image downloads the free data it needs and verifies its checksum: the Doom 1.9 shareware (MD5) and OpenArena 0.8.8 (SHA256). From OpenArena it only extracts the map package.
+
+### Choose the world and start
+
+```bash
+docker run -d --name signet --restart unless-stopped \
+  -p 7777:7777 -e SIGNET_WORLD=signet:nexo signet-server
+```
+
+| `SIGNET_WORLD` | World |
+|---|---|
+| `signet:nexo` | Nexo, the first [native Signet world](/concepts/native-worlds/) |
+| `doom:E1M1` *(default)* | Hangar, the first level of Doom (shareware) |
+| `openarena:oa_dm1` | An OpenArena deathmatch map |
+| `openarena:<map>` | Any BSP in `pak1-maps.pk3` (`oa_dm4`, `dm4ish`…) |
+
+### Check it
+
+```bash
+docker logs signet
+# Native world Nexo: 40x40 m, 18 lights, 18 objects, 8 spawn points
+# Listening on port 7777: signet:nexo · doom:deathmatch (40x40 m) | 0 clients connected
+```
+
+From another machine on the network:
+
+```bash
+cargo run --release --example conformidad -- --servidor <server-ip>
+```
+
+</Steps>
+
+<Callout type="warning">
+If clients cannot connect, check the host's firewall (on macOS: System Settings → Network → Firewall) and that port 7777 is published (`-p 7777:7777`).
+</Callout>

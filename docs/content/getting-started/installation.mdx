@@ -1,0 +1,82 @@
+---
+title: Installation
+description: How to install the Signet SDK for Rust, C, C# or TypeScript.
+---
+
+import { Tabs, Callout } from 'nextra/components'
+
+# Installation
+
+<Callout type="info">
+The beta is not on crates.io or npm yet. Until then, use it from the source of the `signet-sdk` repository.
+</Callout>
+
+## Requirements
+
+| For | You need |
+|---|---|
+| Rust | Rust 1.85 or newer (2024 edition) |
+| C / C++ | The compiled library (`signet.dll`, `libsignet.so` or `libsignet.dylib`) and `signet.h` |
+| C# | The same as C, plus .NET 6+ or Unity 2021+ |
+| TypeScript | Node 18 or newer |
+
+<Tabs items={['Rust', 'C / C++', 'C# / Unity', 'TypeScript']}>
+  <Tabs.Tab>
+    ```toml filename="Cargo.toml"
+    [dependencies]
+    signet-sdk = { path = "../signet-sdk/crates/signet-sdk" }
+    ```
+    Check that everything works:
+    ```bash
+    cd signet-sdk
+    cargo test --release
+    ```
+  </Tabs.Tab>
+  <Tabs.Tab>
+    Build the native library:
+    ```bash
+    cd signet-sdk
+    cargo build --release -p signet-ffi
+    # target/release/signet.dll (+ signet.dll.lib) | libsignet.so | libsignet.dylib
+    ```
+    Include `crates/signet-ffi/include/signet.h` and link against the library:
+    ```bash
+    # Windows (MSVC)
+    cl client.c /I crates\signet-ffi\include target\release\signet.dll.lib
+    # Linux / macOS
+    cc client.c -I crates/signet-ffi/include -L target/release -lsignet
+    ```
+  </Tabs.Tab>
+  <Tabs.Tab>
+    1. Build the native library as in the C tab.
+    2. Copy `bindings/csharp/Signet.cs` into your project (in Unity, into `Assets/Scripts`).
+    3. Put the native library next to the executable (in Unity, in `Assets/Plugins/x86_64`).
+  </Tabs.Tab>
+  <Tabs.Tab>
+    ```bash
+    cd signet-sdk/bindings/typescript
+    npm install
+    npm run build
+    ```
+    And in your project:
+    ```bash
+    npm install ../signet-sdk/bindings/typescript
+    ```
+  </Tabs.Tab>
+</Tabs>
+
+## Try it against a server
+
+You need a running Signet server: [host one with Docker](/getting-started/hosting/) or use your group's. Then:
+
+```bash
+cargo run --release --example conformidad   -- --servidor 192.168.1.212   # conformance
+cargo run --release --example cliente_minimo -- 192.168.1.212 10           # minimal client
+cargo run --release --example visor_ascii    -- 192.168.1.212              # terminal viewer
+```
+
+If everything goes well, `cliente_minimo` ends with something like:
+
+```text
+Done: 139 commands confirmed, 0 corrections, max error 0.000 m
+```

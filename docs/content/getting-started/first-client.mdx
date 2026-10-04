@@ -1,0 +1,103 @@
+---
+title: Your first client
+description: Connect, move and draw the player in about 20 lines, in every language.
+---
+
+import { Tabs, Callout } from 'nextra/components'
+
+# Your first client
+
+A client does four things every frame:
+
+1. **Set the intent** of the player: forward, strafe, look direction, run, fire, weapon.
+2. **Advance** by the elapsed time. The SDK predicts, sends the commands and tells you where to draw.
+3. **Read** the other bodies and the events to draw them with your game.
+4. **Draw**: the camera goes at the returned position plus eye height (1.3 m).
+
+<Tabs items={['Rust', 'C', 'C#', 'TypeScript']}>
+  <Tabs.Tab>
+    ```rust filename="main.rs"
+    use signet_sdk::{cliente::Cliente, protocolo::Intencion};
+
+    fn main() {
+        let mut c = Cliente::conectar("192.168.1.212", "my-game");   // connect
+        let mut yaw = 0.0;
+        loop {
+            let dt = 1.0 / 60.0;
+            if let Some(y) = c.tomar_yaw_aparicion() { yaw = y; }   // on (re)spawn
+            // avance = forward
+            c.fijar_intencion(Intencion { avance: 1.0, yaw, ..c.intencion() });
+            if let Some([x, y, z]) = c.avanzar(dt) {                 // advance
+                // place_camera(x, y + 1.3, z, yaw);
+            }
+            for j in c.jugadores() { /* draw player j with your models */ }
+            for e in c.tomar_eventos() { /* sounds, effects, HUD */ }
+            std::thread::sleep(std::time::Duration::from_millis(16));
+        }
+    }
+    ```
+  </Tabs.Tab>
+  <Tabs.Tab>
+    ```c filename="client.c"
+    #include "signet.h"
+
+    SgClient *c = sg_connect("192.168.1.212", "my-game");
+    float yaw = 0, x, y, z, spawn;
+    while (playing) {
+        if (sg_spawn_yaw(c, &spawn)) yaw = spawn;
+        sg_intent(c, 1.0f, 0.0f, yaw, 0, 0, SG_WEAPON_PISTOL);
+        if (sg_advance(c, dt, &x, &y, &z)) place_camera(x, y + 1.3f, z, yaw);
+        SgPlayer players[64];
+        int n = sg_players(c, players, 64);
+        /* draw players[0..n] */
+    }
+    sg_free(c);
+    ```
+  </Tabs.Tab>
+  <Tabs.Tab>
+    ```csharp filename="SignetPlayer.cs"
+    using Signet;
+    using UnityEngine;
+
+    public class SignetPlayer : MonoBehaviour {
+        Client c;
+        float yaw;
+        void Start() => c = new Client("192.168.1.212", "unity");
+        void Update() {
+            if (c.SpawnYaw(out var y0)) yaw = y0;
+            yaw -= Input.GetAxis("Mouse X") * 0.05f;
+            c.Intent(Input.GetAxis("Vertical"), Input.GetAxis("Horizontal"), yaw,
+                     Input.GetKey(KeyCode.LeftShift), Input.GetMouseButton(0), Weapon.Pistol);
+            // Signet uses -z as north: flip z for Unity's coordinate system.
+            if (c.Advance(Time.deltaTime, out var x, out var y, out var z))
+                transform.SetPositionAndRotation(new Vector3(x, y + 1.3f, -z),
+                    Quaternion.Euler(0, -yaw * Mathf.Rad2Deg, 0));
+        }
+        void OnDestroy() => c?.Dispose();
+    }
+    ```
+  </Tabs.Tab>
+  <Tabs.Tab>
+    ```ts filename="bot.ts"
+    import { Client } from "@signet/sdk";
+
+    // TypeScript does not predict in the beta: ideal for bots, observers and tools.
+    const c = new Client("192.168.1.212", "bot-ts");
+    let yaw = 0;
+    setInterval(() => {
+      yaw += 0.05;
+      c.intent({ forward: 1, yaw });
+    }, 50);
+    c.on("event", (e) => { if ("Muerte" in e) console.log("death", e.Muerte); });
+    ```
+  </Tabs.Tab>
+</Tabs>
+
+<Callout type="warning">
+**Axis conventions.** In Signet/1 north is −z and positive `yaw` turns left (like Bevy and most right-handed, y-up engines). In a left-handed engine such as Unity, flip `z` and the sign of `yaw` when drawing, as in the C# example.
+</Callout>
+
+## Next step
+
+- Draw the world: read the terrain (`c.terreno()`, `sg_terrain_json`) and convert it for your engine. See [write a viewer](/guides/write-viewer/).
+- Contribute maps: write an [importer](/guides/write-importer/).

@@ -1,0 +1,14 @@
+[package]
+name = "signet-ffi"
+description = "C interface of the Signet SDK (signet.h) for engines written in C, C++, C#, Godot or Unreal."
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[lib]
+name = "signet"
+crate-type = ["cdylib", "staticlib"]
+
+[dependencies]
+signet-sdk = { path = "../signet-sdk" }
+serde_json = "1"

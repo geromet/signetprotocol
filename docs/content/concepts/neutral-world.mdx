@@ -1,0 +1,73 @@
+---
+title: The neutral world
+description: The Signet terrain, its coordinates, its layers and its materials.
+---
+
+import { Callout } from 'nextra/components'
+
+# The neutral world
+
+The world every player shares is a **2.5D terrain**: a square grid of **1 × 1 m** cells centred on the origin. Each cell stores the floor height and, if there is one, the ceiling height. It is simple enough for any engine to draw and rich enough to represent Doom or Quake III maps.
+
+## Coordinates
+
+| Axis | Direction | Unit |
+|---|---|---|
+| `x` | east (+) / west (−) | metres |
+| `y` | up (+) | metres (cell heights are integers) |
+| `z` | south (+) / north (−) | metres |
+| `yaw` | 0 looks north (−z); positive values turn left | radians |
+
+Cell `(i, j)` covers `x ∈ [i − side/2, i − side/2 + 1)`, and the same for `z`. Layers are stored **row by row**, first `z` and then `x`: the index is `j · side + i`.
+
+### Source scales
+
+| Game | Conversion |
+|---|---|
+| Doom | 32 units = 1 m (a player is 56 units ≈ 1.75 m tall) |
+| Quake III / OpenArena | 32 units = 1 m; z (up) → y, y (north) → −z |
+| Minecraft | 1 block = 1 m; the gateway puts neutral floor 0 at y = 64 |
+
+## Terrain layers
+
+The wire names are Spanish (Signet/1 vocabulary); the meaning is on the right.
+
+| Field | Type | Meaning |
+|---|---|---|
+| `lado` | integer | cells per side |
+| `alturas` | `i16[side²]` | floor height. On a wall, the height of the top of the wall |
+| `agua` | `bool[side²]` | water surface |
+| `solido` | `bool[side²]` | cannot be walked on: wall or void. If empty, everything is walkable |
+| `techo` | `i16[side²]` | ceiling height; `32767` (`SIN_TECHO`) means open sky |
+| `cielo` | `bool[side²]` | the sky is visible above the cell, even if `techo` keeps the real height to draw façades |
+| `material` + `paleta` | `u8[side²]` + names | neutral material of each cell |
+| `luz` | `u8[side²]` | ambient light 0–255 |
+| `apariciones` | `[x, z][]` | spawn points |
+| `fuente` | text | where it came from: `"doom:E1M1"`, `"openarena:oa_dm1"`, `"signet:nexo"` |
+| `origen` | `[x, y, z]` | point of the original map used as the neutral origin, in its units |
+
+All fields except `origen`, `lado`, `alturas`, `agua` and `nivel_mar` (sea level) are **optional**: a minimal terrain is just a heightmap.
+
+## Neutral materials
+
+Translators do not share textures; they share **material intents**. The importer classifies every surface and each viewer chooses how to paint it.
+
+This is how the beta translators paint them (floor / wall):
+
+| Material | Doom | OpenArena | Minecraft |
+|---|---|---|---|
+| `core:piedra` (stone) | `FLAT5_4` / `BROWN1` | `gothic_floor/largerblock3b` / `gothic_block/blocks15` | `stone_bricks` |
+| `core:metal` | `FLOOR5_1` | `base_floor/clang_floor` / `base_wall/bluemetal2` | `iron_block` |
+| `core:tecnologia` (tech) | `FLAT14` / `COMPTALL` | `base_floor/clangdark` / `base_wall/atech2_c` | `deepslate_tiles` |
+| `core:ladrillo` (brick) | `BROWN96` | `gothic_wall/proto_brik` | `bricks` |
+| `core:madera` (wood) | `FLAT5_2` / `WOOD1` | `gothic_floor/blocks17floor` | `oak_planks` |
+| `core:puerta` (door) | `BIGDOOR2` | `base_trim/pewter` | `spruce_planks` |
+| `core:lava` | `LAVA1` | `liquids/lavahell` | `lava` |
+| `core:toxico` (toxic) | `NUKAGE1` / `SLADWALL` | `liquids/slime7` | `slime_block` |
+| `core:agua` (water) | `FWATER1` | `liquids/pool3d_5` | `water` |
+
+A game can add materials in its own namespace (`minigame:ice`). Viewers that do not know it use a similar one.
+
+<Callout type="warning">
+**Known limitation (2.5D):** a cell has a single floor. If a map has a walkway above a room, the importer keeps the lowest floor with room for a person, and whatever is above becomes ceiling. Layered 3D terrain is on the [roadmap](/roadmap/).
+</Callout>

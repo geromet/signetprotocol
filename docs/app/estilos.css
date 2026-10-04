@@ -1,0 +1,142 @@
+.mv-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 1.05rem;
+}
+.mv-logo-marca {
+  color: hsl(265 80% 60%);
+  font-size: 1.3rem;
+  line-height: 1;
+}
+.mv-logo-sdk {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  padding: 0.1rem 0.4rem;
+  border-radius: 0.35rem;
+  background: hsl(265 80% 60% / 0.15);
+  color: hsl(265 80% 60%);
+}
+
+/* Portada */
+.mv-hero {
+  padding: 2.5rem 0 1rem;
+}
+.mv-hero h1 {
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+.mv-hero h1 span {
+  background: linear-gradient(90deg, hsl(265 80% 60%), hsl(190 85% 45%));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.mv-hero p {
+  font-size: 1.15rem;
+  opacity: 0.8;
+  max-width: 42rem;
+  margin-top: 1rem;
+}
+.mv-botones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin: 1.5rem 0 0.5rem;
+}
+.mv-boton {
+  display: inline-block;
+  padding: 0.6rem 1.1rem;
+  border-radius: 0.6rem;
+  font-weight: 600;
+  text-decoration: none !important;
+  border: 1px solid hsl(265 80% 60% / 0.4);
+}
+.mv-boton.principal {
+  background: hsl(265 80% 58%);
+  color: white !important;
+  border-color: transparent;
+}
+
+/* Rejilla de capas */
+.mv-capas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+  gap: 0.75rem;
+  margin: 1.25rem 0;
+}
+.mv-capa {
+  border: 1px solid hsl(265 30% 50% / 0.3);
+  border-radius: 0.75rem;
+  padding: 0.9rem 1rem;
+}
+.mv-capa b {
+  display: block;
+  margin-bottom: 0.25rem;
+}
+.mv-capa small {
+  opacity: 0.75;
+  line-height: 1.4;
+  display: block;
+}
+.mv-capa .mv-quien {
+  display: inline-block;
+  margin-top: 0.5rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 0.05rem 0.45rem;
+  border-radius: 0.3rem;
+  background: hsl(190 85% 45% / 0.15);
+}
+.mv-capa .mv-quien.servidor {
+  background: hsl(265 80% 60% / 0.15);
+}
+
+/* Galerías de demos */
+.mv-galeria {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+  gap: 0.9rem;
+  margin: 1.25rem 0;
+}
+.mv-galeria.dos {
+  grid-template-columns: repeat(auto-fit, minmax(22rem, 1fr));
+}
+.mv-galeria figure {
+  margin: 0;
+  border: 1px solid hsl(265 30% 50% / 0.25);
+  border-radius: 0.7rem;
+  overflow: hidden;
+  background: hsl(265 30% 50% / 0.06);
+}
+.mv-galeria img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 1280 / 760;
+  object-fit: cover;
+}
+.mv-galeria figcaption {
+  padding: 0.55rem 0.8rem 0.7rem;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+.mv-galeria figcaption b {
+  display: block;
+  font-size: 0.92rem;
+}
+.mv-etiqueta {
+  display: inline-block;
+  margin-top: 0.3rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.05rem 0.45rem;
+  border-radius: 0.3rem;
+  background: hsl(190 85% 45% / 0.15);
+}
+.mv-etiqueta.nativo {
+  background: hsl(140 70% 40% / 0.18);
+}

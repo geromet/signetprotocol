@@ -1,0 +1,51 @@
+---
+title: TypeScript
+description: "@signet/sdk: Signet/1 types and a client for Node."
+---
+
+import { Callout } from 'nextra/components'
+
+# TypeScript · `@signet/sdk`
+
+Complete protocol types and a dependency-free client for Node. It is meant for **bots, observers, server directories, dashboards and tools**.
+
+<Callout type="info">
+**No prediction in the beta.** The client sends unnumbered intents and the server applies the latest one every tick. To play with prediction, use Rust, C or C#. Porting the rules to JavaScript requires floating-point results that match Rust exactly, and that is left for later.
+</Callout>
+
+## Usage
+
+```ts
+import { Client, OBSERVER, heightAt, walkable } from "@signet/sdk";
+
+const c = new Client("192.168.1.212", OBSERVER);
+
+c.on("welcome", (terrain, myId, mode) => {
+  console.log(terrain.fuente, terrain.lado, mode);
+  console.log(heightAt(terrain, 0, 0), walkable(terrain, 0, 0));
+});
+c.on("state", (players) => { /* 20 times per second */ });
+c.on("event", (e) => { if ("Muerte" in e) console.log(e.Muerte); });
+c.on("closed", () => console.log("disconnected"));
+```
+
+| Member | |
+|---|---|
+| `new Client(host, game)` | connects (`"host"` or `"host:port"`) |
+| `terrain`, `myId`, `mode`, `players` | latest known state |
+| `me()` | your body |
+| `intent({ forward, strafe, yaw, run, fire, weapon })` | what the player wants to do |
+| `send(msg)` | any raw `DelCliente` message |
+| `close()` | ends the connection |
+| events `welcome`, `state`, `event`, `closed` | |
+
+It also exports the wire types `Terreno`, `JugadorNet`, `Intencion`, `Evento`, `DelCliente`, `DelServidor` (documented field by field in English) and the helpers `cellIndex`, `heightAt` and `walkable`.
+
+## Included example
+
+```bash
+cd bindings/typescript && npm install && npm run build
+node dist/example.js 192.168.1.212
+# World signet:nexo (40x40 m, 770 walkable cells), mode doom:deathmatch, I am #114
+# 8 bodies (0 players: none), 0 deaths in 5 s
+```

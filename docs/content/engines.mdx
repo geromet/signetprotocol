@@ -1,0 +1,46 @@
+---
+title: Engines and games
+description: Which engines and games the beta supports and which come next.
+---
+
+import { Callout } from 'nextra/components'
+
+# Engines and games
+
+## Supported in the beta
+
+| Engine | Game | Integration | Importer | Viewer | Status |
+|---|---|---|---|---|---|
+| **id Tech 1** | Doom (the player's shareware or commercial WAD) | Reimplementation | ✅ E1M1 and others | ✅ native and translated | beta |
+| **id Tech 3** | OpenArena 0.8.8 (GPL) | Reimplementation | ✅ IBSP v46 BSP | ✅ native (BSP + Bézier) and translated | beta |
+| **Minecraft Java** | Minecraft 26.3 (the player's account) | Gateway (official server + RCON) | — | ✅ blocks | beta |
+| **Signet** | Native Signet worlds (`signet:*`) | Native | ✅ `.mvm` format | ✅ native (lights, objects, sky) and translated | beta |
+| **Bevy** | Reference viewers | Open engine | — | ✅ Doom, OpenArena, Minecraft, Signet, blocks, low-poly | reference |
+
+## Next
+
+| Engine | For | Planned path | SDK interface |
+|---|---|---|---|
+| **ioquake3** | OpenArena and other id Tech 3 games, native | Open engine (fork) | C |
+| **Doom source ports** (Chocolate Doom, GZDoom) | Native Doom with its own renderer | Open engine | C |
+| **Godot 4** | Indie games | GDExtension over the C interface | C |
+| **Unity** | Unturned and indie games | Mod / plugin | C# |
+| **Unreal Engine 5** | Games with official mods | Plugin | C |
+| **Source / Garry's Mod** | Garry's Mod | Lua mod + binary module | C |
+| **Minetest / Luanti** | A free Minecraft-like game | Open engine | C |
+
+<Callout type="info">
+Your engine is not on the list? If it can call C functions or open a TCP socket, it can speak Signet/1. Propose the translator in the repository.
+</Callout>
+
+## Three editions of the SDK
+
+Each engine reaches Signet in a different way, depending on how open it is:
+
+| Edition | For | What it offers |
+|---|---|---|
+| **Open** | Open-source engines (ioquake3, Doom ports, Godot, Luanti) | The full SDK to integrate inside the engine: native rendering, input and prediction |
+| **Mods** | Closed games with official mods (Unity with plugins, Garry's Mod, Minecraft with a server) | C/C# interface and gateways that only use the allowed API |
+| **Studio** | Closed games without mods (most AAA titles) | An official SDK the studio integrates into its game, with conformance certification and control of its brand |
+
+The **Studio** edition is what would make, for example, an official viewer for a AAA game possible inside Signet. No closed game should be integrated without its studio.

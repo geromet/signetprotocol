@@ -1,0 +1,24 @@
+name: Protocol proposal
+description: Change or extend Signet/1 (see GOVERNANCE.md)
+labels: [protocol]
+body:
+  - type: textarea
+    id: usecase
+    attributes:
+      label: Use case
+      description: What cannot be done today?
+    validations:
+      required: true
+  - type: textarea
+    id: fields
+    attributes:
+      label: New fields or messages
+      description: Names, types and default values. Signet/1 only grows with optional fields that have a default.
+    validations:
+      required: true
+  - type: textarea
+    id: impact
+    attributes:
+      label: Effect on existing translators
+    validations:
+      required: true

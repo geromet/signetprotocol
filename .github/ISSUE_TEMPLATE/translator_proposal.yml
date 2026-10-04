@@ -1,0 +1,29 @@
+name: New translator (importer, viewer or gateway)
+description: Propose or announce support for a game or engine
+labels: [translator]
+body:
+  - type: input
+    id: game
+    attributes:
+      label: Game or engine
+    validations:
+      required: true
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Kind
+      options: [Importer, Viewer, Gateway, Other]
+    validations:
+      required: true
+  - type: textarea
+    id: legal
+    attributes:
+      label: Why this is allowed
+      description: Open-source engine, official mod support, a server you control or a reimplementation. No injection into online games and no game files in the repo.
+    validations:
+      required: true
+  - type: textarea
+    id: plan
+    attributes:
+      label: Plan
+      description: What you will build and whether you want help.

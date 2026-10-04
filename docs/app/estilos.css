@@ -1,22 +1,62 @@
+/* Tema monocromo: solo grises, el color lo ponen las capturas. */
+:root {
+  --mv-linea: rgb(128 128 128 / 0.28);
+  --mv-suave: rgb(128 128 128 / 0.08);
+  --mv-etiqueta: rgb(128 128 128 / 0.16);
+}
+
+/* Escala monocromo: todos los tonos del tema pasan a gris neutro (misma luminosidad, sin croma). */
+:root {
+  --x-color-blue-100: oklch(93.2% 0 0);
+  --x-color-blue-400: oklch(70.7% 0 0);
+  --x-color-blue-600: oklch(54.6% 0 0);
+  --x-color-blue-700: oklch(48.8% 0 0);
+  --x-color-blue-900: oklch(37.9% 0 0);
+  --x-color-gray-100: oklch(96.7% 0 0);
+  --x-color-gray-200: oklch(92.8% 0 0);
+  --x-color-gray-300: oklch(87.2% 0 0);
+  --x-color-gray-400: oklch(70.7% 0 0);
+  --x-color-gray-50: oklch(98.5% 0 0);
+  --x-color-gray-600: oklch(44.6% 0 0);
+  --x-color-gray-700: oklch(37.3% 0 0);
+  --x-color-gray-800: oklch(27.8% 0 0);
+  --x-color-gray-900: oklch(21% 0 0);
+  --x-color-green-100: oklch(96.2% 0 0);
+  --x-color-green-500: oklch(72.3% 0 0);
+  --x-color-green-700: oklch(52.7% 0 0);
+  --x-color-green-800: oklch(44.8% 0 0);
+  --x-color-green-900: oklch(39.3% 0 0);
+  --x-color-purple-100: oklch(94.6% 0 0);
+  --x-color-purple-400: oklch(71.4% 0 0);
+  --x-color-purple-600: oklch(55.8% 0 0);
+  --x-color-purple-900: oklch(38.1% 0 0);
+  --x-color-red-100: oklch(93.6% 0 0);
+  --x-color-red-500: oklch(63.7% 0 0);
+  --x-color-red-600: oklch(57.7% 0 0);
+  --x-color-red-700: oklch(50.5% 0 0);
+  --x-color-red-900: oklch(39.6% 0 0);
+  --x-color-slate-100: oklch(96.8% 0 0);
+  --x-color-slate-200: oklch(92.9% 0 0);
+  --x-color-slate-50: oklch(98.4% 0 0);
+  --x-color-slate-700: oklch(37.2% 0 0);
+  --x-color-slate-900: oklch(20.8% 0 0);
+  --x-color-yellow-50: oklch(98.7% 0 0);
+  --x-color-yellow-500: oklch(79.5% 0 0);
+  --x-color-yellow-700: oklch(55.4% 0 0);
+}
+
 .mv-logo {
   display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
+  align-items: baseline;
+  gap: 0.4rem;
   font-size: 1.05rem;
-}
-.mv-logo-marca {
-  color: hsl(265 80% 60%);
-  font-size: 1.3rem;
-  line-height: 1;
+  letter-spacing: -0.01em;
 }
 .mv-logo-sdk {
-  font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  padding: 0.1rem 0.4rem;
-  border-radius: 0.35rem;
-  background: hsl(265 80% 60% / 0.15);
-  color: hsl(265 80% 60%);
+  font-size: 0.65rem;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  opacity: 0.55;
 }
 
 /* Portada */
@@ -25,20 +65,17 @@
 }
 .mv-hero h1 {
   font-size: clamp(2rem, 5vw, 3.2rem);
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1.1;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
   margin: 0;
 }
 .mv-hero h1 span {
-  background: linear-gradient(90deg, hsl(265 80% 60%), hsl(190 85% 45%));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  opacity: 0.5;
 }
 .mv-hero p {
-  font-size: 1.15rem;
-  opacity: 0.8;
+  font-size: 1.1rem;
+  opacity: 0.7;
   max-width: 42rem;
   margin-top: 1rem;
 }
@@ -50,16 +87,31 @@
 }
 .mv-boton {
   display: inline-block;
-  padding: 0.6rem 1.1rem;
-  border-radius: 0.6rem;
-  font-weight: 600;
+  padding: 0.55rem 1.05rem;
+  border-radius: 0.5rem;
+  font-weight: 500;
   text-decoration: none !important;
-  border: 1px solid hsl(265 80% 60% / 0.4);
+  border: 1px solid var(--mv-linea);
+  transition: background 0.15s;
 }
+.mv-boton:hover {
+  background: var(--mv-suave);
+}
+/* Botón principal: invierte los colores del tema (negro sobre blanco y al revés). */
 .mv-boton.principal {
-  background: hsl(265 80% 58%);
-  color: white !important;
+  background: #0a0a0a;
+  color: #fff !important;
   border-color: transparent;
+}
+.mv-boton.principal:hover {
+  background: #262626;
+}
+html.dark .mv-boton.principal {
+  background: #fafafa;
+  color: #0a0a0a !important;
+}
+html.dark .mv-boton.principal:hover {
+  background: #d4d4d4;
 }
 
 /* Rejilla de capas */
@@ -70,8 +122,8 @@
   margin: 1.25rem 0;
 }
 .mv-capa {
-  border: 1px solid hsl(265 30% 50% / 0.3);
-  border-radius: 0.75rem;
+  border: 1px solid var(--mv-linea);
+  border-radius: 0.6rem;
   padding: 0.9rem 1rem;
 }
 .mv-capa b {
@@ -79,21 +131,26 @@
   margin-bottom: 0.25rem;
 }
 .mv-capa small {
-  opacity: 0.75;
+  opacity: 0.7;
   line-height: 1.4;
   display: block;
 }
-.mv-capa .mv-quien {
+.mv-capa .mv-quien,
+.mv-etiqueta {
   display: inline-block;
   margin-top: 0.5rem;
-  font-size: 0.72rem;
-  font-weight: 600;
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
   padding: 0.05rem 0.45rem;
   border-radius: 0.3rem;
-  background: hsl(190 85% 45% / 0.15);
+  background: var(--mv-etiqueta);
 }
-.mv-capa .mv-quien.servidor {
-  background: hsl(265 80% 60% / 0.15);
+/* Servidor / nativo: se distinguen por contorno, no por color. */
+.mv-capa .mv-quien.servidor,
+.mv-etiqueta.nativo {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px currentColor;
 }
 
 /* Galerías de demos */
@@ -108,10 +165,10 @@
 }
 .mv-galeria figure {
   margin: 0;
-  border: 1px solid hsl(265 30% 50% / 0.25);
-  border-radius: 0.7rem;
+  border: 1px solid var(--mv-linea);
+  border-radius: 0.6rem;
   overflow: hidden;
-  background: hsl(265 30% 50% / 0.06);
+  background: var(--mv-suave);
 }
 .mv-galeria img {
   display: block;
@@ -127,16 +184,4 @@
 .mv-galeria figcaption b {
   display: block;
   font-size: 0.92rem;
-}
-.mv-etiqueta {
-  display: inline-block;
-  margin-top: 0.3rem;
-  font-size: 0.7rem;
-  font-weight: 600;
-  padding: 0.05rem 0.45rem;
-  border-radius: 0.3rem;
-  background: hsl(190 85% 45% / 0.15);
-}
-.mv-etiqueta.nativo {
-  background: hsl(140 70% 40% / 0.18);
 }

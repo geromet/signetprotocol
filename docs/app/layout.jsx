@@ -1,4 +1,4 @@
-import { Footer, Layout, Navbar } from 'nextra-theme-docs'
+import { Footer, Layout, Navbar, ThemeSwitch } from 'nextra-theme-docs'
 import { Banner, Head, Search } from 'nextra/components'
 import { getPageMap } from 'nextra/page-map'
 import 'nextra-theme-docs/style.css'
@@ -14,7 +14,6 @@ export const metadata = {
 
 const logo = (
   <span className="mv-logo">
-    <span className="mv-logo-marca" aria-hidden="true">◈</span>
     <b>Signet</b>
     <span className="mv-logo-sdk">PROTOCOL</span>
   </span>
@@ -23,11 +22,20 @@ const logo = (
 export default async function RootLayout({ children }) {
   return (
     <html lang="en" dir="ltr" suppressHydrationWarning>
-      <Head color={{ hue: 265, saturation: 80 }} />
+      {/* Monocromo: sin tono ni saturación, solo negro, blanco y grises. */}
+      <Head
+        color={{ hue: 0, saturation: 0, lightness: { dark: 92, light: 8 } }}
+        backgroundColor={{ dark: 'rgb(10,10,10)', light: 'rgb(255,255,255)' }}
+      />
       <body>
         <Layout
           banner={<Banner storageKey="signet-beta-1">Signet SDK 0.1 is in beta: the API may change. Your translators are welcome!</Banner>}
-          navbar={<Navbar logo={logo} />}
+          navbar={
+            <Navbar logo={logo} projectLink="https://github.com/kian-cx/signetprotocol">
+              {/* Claro / oscuro / sistema, siempre visible (también en el móvil). */}
+              <ThemeSwitch lite />
+            </Navbar>
+          }
           pageMap={await getPageMap()}
           footer={<Footer>Apache-2.0 · {new Date().getFullYear()} · Signet Protocol. Games and their trademarks belong to their owners.</Footer>}
           sidebar={{ defaultMenuCollapseLevel: 1 }}

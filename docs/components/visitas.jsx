@@ -6,7 +6,7 @@
 import { useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
 
-const API = '/api/visits'
+const API = '/api/visits/'
 const SITIOS = ['signetprotocol.io', 'www.signetprotocol.io']
 
 function formato(n) {

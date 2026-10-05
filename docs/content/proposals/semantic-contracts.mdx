@@ -28,7 +28,7 @@ Everything on this page is **our proposal** unless it explicitly quotes or links
 
 ## 1. A label is not an identity
 
-**Upstream draft:** semantic items are identified mainly by display labels such as `move`, `fire`, `weapon.ranged` and `health_pickup`.
+**Upstream draft:** semantic items are identified mainly by display labels such as `move`, `fire`, `weapon.ranged` and `health_pickup`. The draft already raises optional archetype identifiers, but not versioned normative definitions with conformance assertions.
 
 Labels are a good user-facing name and a bad protocol identity.
 
@@ -100,7 +100,7 @@ The contract records at least:
   "required": ["intent.fire", "intent.move"],
   "optional": ["intent.jump"],
   "activated": ["intent.fire", "intent.move", "intent.jump"],
-  "rejected": [{ "id": "intent.crouch", "reason": "NOT_OFFERED" }],
+  "rejected": [{ "id": "intent.crouch", "reason": "OPTIONAL_CONCEPT_DISABLED" }],
   "accepted_fallbacks": [],
   "ordering_model": "event-sequence",
   "admission": "ACCEPTED"
@@ -180,7 +180,7 @@ Earlier accepted optionals keep their priority. Representative reasons from the 
 ```text
 ORDERING_MODEL_CONFLICT
 REQUIRED_PROFILE_UNSUPPORTED
-DEPENDENCY_VERSION_MISMATCH
+REQUIRED_PROFILE_CYCLE
 ```
 
 ## 7. Translation-profile authority classes
@@ -239,7 +239,7 @@ CLOSED_CANDIDATES != CORRECT_CANDIDATE_PRESENT
 MODEL_SUGGESTION != AUTHORITY
 ```
 
-The planned resolver experiment should measure candidate-order stability and `NO_MATCH` behavior, not top-1 accuracy alone. Pilot metrics are recorded as scoped experimental evidence in [translator trust and validation](/proposals/translator-trust-and-validation/).
+The planned resolver experiment should measure candidate-order stability and `NO_MATCH` behavior, not top-1 accuracy alone. The six-case pilot metrics are recorded as scoped experimental evidence in the [pinned L2 notebook](https://github.com/Distributed-Minds/Fleet-Control-Public/tree/ba65b131559a28cf0cb7d3416d492dbd1d91b316/Research/Game-Interoperability/Signet-Frontier-2026-10/experiments/L2-Resolver-Pilot); its `gold_oracle` control is an oracle upper bound, not resolver performance.
 
 ## 11. Executable conformance vectors
 

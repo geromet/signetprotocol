@@ -6,6 +6,14 @@
 [![PRs welcome](https://img.shields.io/badge/PRs-welcome-brightgreen)](CONTRIBUTING.md)
 [![X](https://img.shields.io/badge/X-@kian__cx-black)](https://x.com/kian_cx)
 
+> [!IMPORTANT]
+> **This is the `review/signet2-interoperability` review branch.**
+> Start with **[SIGNET2-REVIEW.md](SIGNET2-REVIEW.md)** for the 2–4 minute summary.
+>
+> The branch reviews the Signet 2 / Forge draft. It keeps the existing
+> architecture and proposes a deterministic semantic/session contract around it.
+> The detailed docs are secondary.
+
 **Every game, one world.** Signet Protocol is an open protocol and SDK that lets players with *different* games join the same world. A neutral server owns the geometry, the rules and the bodies; every player sees and controls it with **their own** game through a translator.
 
 The goal is a **global protocol for communication between all games**: any game can join any world, and viewers, mechanics and content can be exchanged between games, so a player can bring their own game to someone else's world and the other way around.

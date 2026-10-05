@@ -8,6 +8,8 @@ export default {
   guides: 'Guides',
   engines: 'Engines and games',
   roadmap: 'Roadmap',
+  forge: 'Signet Forge',
+  proposals: 'Proposals',
   legal: 'Principles and legal',
   contributing: 'Contributing',
   stats: 'Site statistics'

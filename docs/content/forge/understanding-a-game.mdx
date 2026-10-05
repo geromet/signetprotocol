@@ -1,17 +1,15 @@
 ---
 title: Understanding a game
-description: How Signet Forge discovers what a game can do and classifies it into intents, archetypes and an appearance palette.
+description: How Signet Forge understands any game, calibrates its controls and classifies what it can do into intents, archetypes and an appearance palette.
 ---
 
 import { Callout } from 'nextra/components'
 
 # Understanding a game
 
-<Callout type="warning">
-Planned behaviour, part of the [Signet 2 proposal](/proposals/translation-profiles/).
-</Callout>
+<Callout type="warning">Draft proposal, part of Signet 2.</Callout>
 
-Every engine is different, but every game answers the same three questions. Forge's job is to find those answers and write them down in the shared vocabulary.
+Every engine is different, but every game answers the same three questions. Forge's job is to find those answers and write them down in the shared vocabulary, whatever the game is.
 
 | Question | What Forge produces | Example (Minecraft) |
 |---|---|---|
@@ -21,36 +19,49 @@ Every engine is different, but every game answers the same three questions. Forg
 
 Together they become the game's **capabilities**, which the translator declares when it connects. The server then uses only what every game in the match can handle.
 
+## Setting up controls in advance (calibration)
+
+Before the first match, the player goes through a short wizard, just like setting up the controls of a new game. This has a huge advantage: **every obvious decision is made by the player themselves, exactly, without using any model.**
+
+```mermaid
+flowchart LR
+  C["1. Controls<br/>hold forward"] --> M["2. Measurement<br/>speed, jump, turn"]
+  M --> I["3. Items<br/>pick from suggestions"]
+  I --> P["4. Profile ready<br/>saved and pinned"]
+```
+
+1. **Controls.** The wizard asks: "hold the key to move forward for two seconds". It records which key the player used and binds it to the `move` intent. The same for strafing, turning, firing and switching weapons.
+2. **Measurement.** For some intents, the wizard **measures** how that game behaves: walking and running speed, jump height, turn speed, eye height, maximum step height. We call this the **motion profile**, and it is what makes the translation faithful.
+3. **Items.** For each archetype, the items in the game's palette are shown, with the model's suggestion highlighted. The player accepts it or picks another.
+4. **Profile ready.** Everything is saved in the translation profile. From here on, the game works with no ambiguity.
+
+### Three difficulty tiers
+
+| Tier | Examples | How it is solved |
+|---|---|---|
+| **0 · Obvious** | forward, back, strafe, turn, fire | Set by the player during calibration. **Exact, no model** |
+| **1 · Measurable** | run, jump, crouch | Set up and also measured (motion profile). No model |
+| **2 · Complex** | abilities, inventory, emotes, vehicles, unusual items | The model **suggests** from closed options and a person **confirms** |
+
+<Callout type="info">
+Calibration clears everything obvious out of the way. The model only works on tier 2, where it is actually needed, and the number of decisions it has to make is small.
+</Callout>
+
 ## Sources Forge can read
 
 Forge only uses sources the game officially allows:
 
-- **The player's own input devices** during calibration.
+- **The player's own input devices**, during calibration.
 - **Open-source engines** and their code.
 - **Official mod and plugin APIs**, item registries and data files the game ships for modders.
-- **A server you control** (for games with dedicated servers).
+- **A server you control**, for games with dedicated servers.
 - **Documentation and lists you write by hand.**
 
-<Callout type="info">
+<Callout type="warning">
 Forge does not inject code into online games and does not bypass anti-cheat. A closed game with no legitimate way to read or drive it is out of scope. See the [legal principles](/legal/).
 </Callout>
 
-## 1. Inputs: calibration
-
-The first and most important source. Forge runs the same **calibration wizard** the standard translator ships:
-
-1. "Hold the key to move forward for two seconds." Forge records the input and binds it to the `move` intent. The same for strafing, turning, firing and switching weapons.
-2. For movement it **measures** the game: walking and running speed, jump height, turn rate, eye height, step height. This is the **motion profile**, and it is what makes the translation faithful.
-
-Calibration solves the obvious inputs exactly, with no model at all.
-
-| Tier | Examples | How it is solved |
-|---|---|---|
-| 0 · Obvious | forward, back, strafe, turn, fire | Set by the player during calibration. Exact, no model |
-| 1 · Measurable | run, jump, crouch | Calibrated and measured |
-| 2 · Complex | abilities, inventory, emotes, vehicles, unusual items | The model suggests, a person confirms |
-
-## 2. Items: building the palette
+## Building the palette
 
 Forge collects the list of things the game can show (items, weapons, pickups, blocks) from its registry, its mod API or a hand-written list. Each entry gets an identifier and a short description, never the game's files:
 
@@ -58,17 +69,10 @@ Forge collects the list of things the game can show (items, weapons, pickups, bl
 { "id": "minecraft:bow", "describe": "ranged weapon, fires arrows, charged by holding" }
 ```
 
-## 3. Classification
+## Classifying
 
-For every archetype, Forge asks a resolver to rank the palette. For every complex input, it ranks the intent vocabulary. The resolver only **scores candidates from a closed list**, so it can never invent an item the game lacks or an intent that does not exist.
+For every archetype, Forge asks the resolver to rank the palette. For every complex input, it ranks the intent vocabulary. See [how the model decides](/forge/how-the-model-decides/).
 
-```text
-archetype "weapon.ranged" in Minecraft
-  bow 0.81 · crossbow 0.74 · trident 0.55 · snowball 0.31 · fishing rod 0.22   (illustrative)
-```
+## Recording what the game cannot do
 
-A contrastive ranking model such as [CLM-v0.1-8B](https://huggingface.co/Contrastive-LM/CLM-v0.1-8B) fits this shape. No model has been validated for games yet.
-
-## 4. What the game cannot do
-
-Forge also records **gaps**: intents the game cannot emit (an old game without jumping) or archetypes it cannot show. The server uses this to approximate or ignore those actions instead of breaking the match.
+Forge also records **gaps**: intents the game cannot emit (an old game without jumping) or archetypes it cannot show. Thanks to capabilities, the server uses this to approximate or ignore those actions instead of breaking the match.

@@ -1,6 +1,11 @@
 export default {
   index: 'Overview',
+  architecture: 'Architecture and concepts',
   'understanding-a-game': 'Understanding a game',
-  workflow: 'From suggestion to profile',
-  'fine-tuning': 'Learning and fine-tuning'
+  'how-the-model-decides': 'How the model decides',
+  workflow: 'Translation profiles',
+  'fine-tuning': 'Learning and fine-tuning',
+  'reliability-and-limits': 'Reliability and limits',
+  roadmap: 'Roadmap and open questions',
+  glossary: 'Glossary'
 }

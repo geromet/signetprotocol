@@ -1,6 +1,6 @@
 ---
 title: Signet Forge
-description: The companion tool to understand any game and build its Signet translation, from calibration to a pinned profile.
+description: How different games can play together without translating every game into every other game, and the companion tool that builds those translations.
 ---
 
 import { Callout, Cards } from 'nextra/components'
@@ -8,43 +8,65 @@ import { Callout, Cards } from 'nextra/components'
 # Signet Forge
 
 <Callout type="warning">
-**Planned, not released yet.** Signet Forge is part of the [Signet 2 proposal](/proposals/translation-profiles/). This section describes how it is meant to work so the community can shape it. Feedback is welcome in [Discussions](https://github.com/kian-cx/signetprotocol/discussions).
+**Draft proposal, not implemented yet.** Signet Forge and the intents and archetypes architecture are part of Signet 2. This section is the full design document, so the community can shape it before it is built. Download it as a [PDF](/signet-2-architecture.pdf), or give feedback in [Discussions](https://github.com/kian-cx/signetprotocol/discussions).
 </Callout>
 
-Signet Forge is a **companion tool** for people who build translators. It helps you understand a game, whatever engine it runs on, and turn what you learn into a **translation profile** that the standard Signet translator can use.
+## One-minute summary
 
-You do not need Forge to play. Players only need the standard translator and the profile Forge produced.
+- **Today**, for two games to play together you have to translate one into the other, piece by piece. Every new game adds more work.
+- **Signet 2** proposes something else: each game translates **into a shared meaning** and **out of a shared meaning**. The server only understands meaning: what the player wants to do (*intents*) and what exists in the world (*archetypes*).
+- Each game keeps what makes it unique: its interface, its mechanics, its animations. It only decides **how to show** each archetype and **which button means what**.
+- Before playing, the player **sets up their controls** once, like in any game. That solves everything obvious without artificial intelligence.
+- For what is not obvious, an **AI model picks from a closed list of options** and a person confirms. The decision is saved and from then on it is always the same.
+- **Signet Protocol** is the standard: protocol, SDK and standard translator. **Signet Forge** is a separate tool to create, review and improve translations on top of that standard.
 
-## Standard and companion tool
+## The problem
 
-| | Signet Protocol (the standard) | Signet Forge (companion tool) |
-|---|---|---|
-| **What it is** | Protocol, SDK and the standard translator | An app to create, review and improve translations |
-| **Includes** | Intent vocabulary, archetype catalog, capabilities, translation API, profile format, calibration wizard, reference server | Game discovery, suggestion review, profile editing, pending queue, dataset, model fine-tuning |
-| **Needed to play?** | Yes | No. Only to build translators |
-| **Uses AI?** | Not during a match: it only reads profiles | Yes, to suggest and to train |
-| **Goal** | Simple, stable and reliable | Make translations easy to build and better over time |
+A game is much more than its world: it has its own controls, its own items, its own way of moving and shooting. When we want a Minecraft player and a Doom player in the same match, we have to answer questions like these:
 
-## What Forge does
+- Doom has a pistol. Minecraft does not. What is the Minecraft player holding?
+- A modern game lets you jump, crouch and slide. An old one does not. What happens when someone jumps?
+- Every engine sends "move forward" in a different way. How does the server know it is the same thing?
+
+If we solve this **pair by pair** (Doom↔Minecraft, Doom↔OpenArena, Minecraft↔OpenArena…), 10 games make 45 pairs and 20 games make 190. It does not scale, and every pair piles up special cases.
+
+## The idea in one sentence
+
+<Callout type="info">
+**Do not translate from game to game. Translate from game to meaning, and from meaning to game.**
+</Callout>
+
+This way each new game only needs **one** translator, to and from the shared meaning, and it can automatically play with all the others.
 
 ```mermaid
 flowchart LR
-  G["Your game"] --> D["Discover<br/>inputs, items, abilities"]
-  D --> C["Classify<br/>intents and archetypes"]
-  C --> R["Review<br/>a person decides"]
-  R --> P["Translation profile<br/>pinned and versioned"]
-  P --> T["Standard translator"]
+  D["Doom"] <--> M["Shared meaning"]
+  MC["Minecraft"] <--> M
+  OA["OpenArena"] <--> M
+  X["Game X"] <--> M
 ```
 
-1. **Discover** what the game can do: its controls, its items and its abilities.
-2. **Classify** each of them against the shared intent vocabulary and archetype catalog. A model suggests, from closed lists only.
-3. **Review**: a person confirms or corrects every suggestion.
-4. **Pin** the decisions in a translation profile, which works like a lock file.
-5. The **standard translator** reads the profile. From then on, the game behaves the same way every time.
+With a shared meaning, the number of translators grows at the same rate as the number of games: 4 translators for 4 games, instead of 6 pair-by-pair translators.
+
+## The standard and the companion tool
+
+| | Signet Protocol (the standard) | Signet Forge (companion tool) |
+|---|---|---|
+| **What it is** | The protocol, the SDK and the **standard translator** | An application to create, review and improve translations |
+| **Includes** | Intent vocabulary, archetype catalog, capabilities, translation API, profile format, calibration wizard, reference server | Game discovery, suggestion review, profile editing, pending queue, dataset, model fine-tuning |
+| **Needed to play?** | Yes | **No.** Only for people who build translators |
+| **Uses AI?** | Not during the match: it only reads profiles | Yes, to suggest and to train |
+| **Goal** | To be simple, stable and reliable | To make translations easy to build and better over time |
+
+## Read the full document
 
 <Cards>
-  <Cards.Card title="Understanding a game" href="/forge/understanding-a-game/" arrow />
-  <Cards.Card title="From suggestion to profile" href="/forge/workflow/" arrow />
+  <Cards.Card title="Architecture and concepts" href="/forge/architecture/" arrow />
+  <Cards.Card title="Understanding a game (calibration)" href="/forge/understanding-a-game/" arrow />
+  <Cards.Card title="How the model decides" href="/forge/how-the-model-decides/" arrow />
+  <Cards.Card title="Translation profiles" href="/forge/workflow/" arrow />
   <Cards.Card title="Learning and fine-tuning" href="/forge/fine-tuning/" arrow />
-  <Cards.Card title="Signet 2 proposal" href="/proposals/translation-profiles/" arrow />
+  <Cards.Card title="Reliability and limits" href="/forge/reliability-and-limits/" arrow />
+  <Cards.Card title="Roadmap and open questions" href="/forge/roadmap/" arrow />
+  <Cards.Card title="Glossary" href="/forge/glossary/" arrow />
 </Cards>

@@ -332,3 +332,15 @@ html.dark .mv-boton.principal:hover {
   padding: 0.35rem 0;
   border-bottom: 1px solid var(--mv-linea);
 }
+
+/* Figuras estáticas en SVG (fondo blanco también en modo oscuro) */
+.mv-figura {
+  margin: 1.25rem 0;
+}
+.mv-figura img {
+  width: 100%;
+  border: 1px solid var(--mv-linea);
+  border-radius: 0.6rem;
+  background: #fff;
+  padding: 0.5rem;
+}

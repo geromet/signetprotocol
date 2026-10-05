@@ -1,0 +1,31 @@
+---
+title: Roadmap and open questions
+description: The proposed steps to build Signet 2 and Signet Forge, and the questions still open.
+---
+
+import { Callout } from 'nextra/components'
+
+# Roadmap and open questions
+
+<Callout type="warning">Draft proposal, part of Signet 2.</Callout>
+
+## Proposed roadmap
+
+| # | Step | Outcome |
+|---|---|---|
+| 1 | Publish version 0 of the vocabulary (~15 intents) and of the catalog (~15 archetypes) | A stable list to discuss |
+| 2 | Add capabilities to the protocol greeting, as an optional field | Compatible with Signet/1 |
+| 3 | Define the translation profile format and the calibration wizard | Tiers 0 and 1 without AI |
+| 4 | Prototype without AI: `weapon.ranged` → bow in the Minecraft translator | End-to-end demonstration |
+| 5 | 30-case experiment: hand-written rules vs text similarity vs contrastive model | Decide whether the model adds value |
+| 6 | First version of Signet Forge (review, pin, export data) | A tool for the community |
+
+## Open questions
+
+- What is the minimum a motion profile must measure?
+- How do we measure it in a game that does not report its position?
+- Who maintains the vocabulary and the catalog, and how are new entries accepted? (See [governance](https://github.com/kian-cx/signetprotocol/blob/main/GOVERNANCE.md).)
+- Where does the model run: on the player's machine, on a shared service, or only in Signet Forge?
+- How are conflicting community profiles for the same game resolved?
+
+Have an answer or a different idea? Open a [discussion](https://github.com/kian-cx/signetprotocol/discussions) or an issue with the `protocol` label.

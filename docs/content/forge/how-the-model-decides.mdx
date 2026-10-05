@@ -1,0 +1,50 @@
+---
+title: How the model decides
+description: The model ranks a closed list of options, never invents, and never runs inside the game loop.
+---
+
+import { Callout } from 'nextra/components'
+
+# How the model decides
+
+<Callout type="warning">Draft proposal, part of Signet 2. No model has been validated for games yet.</Callout>
+
+The model does not "invent" translations. It works like someone who is shown a list of options and asked which one fits best. For this we propose a **contrastive ranking model**, for example [CLM-v0.1-8B](https://huggingface.co/Contrastive-LM/CLM-v0.1-8B) (Contrastive-LM, Apache-2.0 license): it receives a situation and a list of candidates, and returns each candidate with a score.
+
+```text
+Situation:   archetype "weapon.ranged", game Minecraft
+Candidates:  bow · crossbow · fishing rod · snowball · trident
+Result:      (illustrative example, not a real measurement)
+             bow 0.81 · crossbow 0.74 · trident 0.55 · snowball 0.31 · fishing rod 0.22
+```
+
+Advantages of this approach:
+
+- **It cannot go outside the list.** Since it only scores candidates, it never proposes something the game does not have or an intent that does not exist.
+- **It is explainable.** You see the scores of every option, not just the winner.
+- **It is replaceable.** The resolver is an interface: a model today, a better one tomorrow, or a hand-written table.
+
+## Decision order
+
+```mermaid
+flowchart LR
+  E["Game event<br/>key, click, item"] --> Q{"In the profile?"}
+  Q -->|"yes"| U["Use it<br/>always the same"]
+  Q -->|"no"| M["The model<br/>scores candidates"]
+  M --> H["Person confirms<br/>saved to the profile"]
+  H --> U
+  U --> O["Intent<br/>or appearance"]
+```
+
+The fast path is used almost always. The model only steps in the first time something new appears.
+
+Priority when there are several sources:
+
+1. What the **player** pinned.
+2. The translator's **profile**.
+3. The **model's** suggestion.
+4. A safe **default**.
+
+<Callout type="info">
+**The model is never in the game loop.** The server simulates 20 times per second and a model of this size needs a GPU. So the model works before playing or when something new appears, and its answer is saved. During the match only the profile is consulted, which is instant.
+</Callout>

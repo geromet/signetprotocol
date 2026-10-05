@@ -1,35 +1,35 @@
 ---
 title: Learning and fine-tuning
-description: How every reviewed decision becomes training data to make Forge's suggestions better.
+description: The Signet Forge cycle. Every reviewed decision becomes training data that makes the next suggestions better.
 ---
 
 import { Callout } from 'nextra/components'
 
 # Learning and fine-tuning
 
-<Callout type="warning">
-Planned behaviour, part of the [Signet 2 proposal](/proposals/translation-profiles/).
-</Callout>
+<Callout type="warning">Draft proposal, part of Signet 2.</Callout>
+
+## The Signet Forge cycle
 
 ```mermaid
 flowchart LR
-  S["Suggest<br/>model scores"] --> R["Review<br/>a person picks"]
+  S["Suggest<br/>the model scores"] --> R["Review<br/>a person picks"]
   R --> P["Pin<br/>goes to the profile"]
-  P --> L["Learn<br/>training example"]
+  P --> L["Learn<br/>training examples"]
   L --> F["Fine-tune<br/>a better model"]
   F --> S
 ```
 
-Every approved decision is a training example: **situation, candidates, chosen**. With enough of them, a ranking model can be fine-tuned for games, so the next game needs fewer corrections.
+The fine-tuned model suggests better next time.
 
-With a model like CLM, which keeps a large encoder frozen and trains two small heads on top, only those heads would need training, which should be cheap. This has not been tested yet.
+Every approved decision is an example: *situation, options, chosen*. With enough examples the model can be fine-tuned for video games. With a model like CLM, which separates a large frozen encoder from two small "heads", only those heads would need training, which should be cheap. This has not been tested yet.
 
 ## Data rules
 
-- Only **names and identifiers**. Never game files: no textures, sounds or models.
-- Nothing about the player: no usernames, no input logs.
-- Contributed under an **open license**, so the whole community benefits.
+- Only names and identifiers. **Never** game files: no textures, sounds or models.
+- Nothing about the player: no usernames and no key logs.
+- Contributed under an open license, so the whole community benefits.
 
 ## Validate before relying on it
 
-Before a model becomes part of Forge, we will run a small experiment: about 30 cases, comparing hand-written rules, plain text similarity and a contrastive ranker, measuring top-1 accuracy and how often a person overrides the suggestion. The result decides whether a model is worth it.
+Before a model becomes part of Forge, we will run a small experiment: about 30 cases, comparing hand-written rules, plain text similarity and a contrastive ranker. We will measure top-1 accuracy and how often a person overrides the suggestion. The result decides whether a model adds value.

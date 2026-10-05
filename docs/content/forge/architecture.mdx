@@ -1,0 +1,56 @@
+---
+title: Architecture and concepts
+description: What stays inside each game, what travels over the network, and the concepts of Signet 2.
+---
+
+import { Callout } from 'nextra/components'
+
+# Architecture and concepts
+
+<Callout type="warning">Draft proposal, part of Signet 2.</Callout>
+
+## Overall architecture
+
+The system has three parts. What matters is **what stays inside each game** and **what travels over the network**.
+
+<figure className="mv-figura"><img src="/img/forge/architecture.svg" alt="Signet 2 architecture: input translators send intents to the neutral server, which simulates and sends state and archetypes back to each game's output translator." /></figure>
+
+Only meaning travels over the network, never game files.
+
+1. **The player** presses a key in their game. The **input translator** turns it into an intent ("move forward", "fire").
+2. **The server** receives everyone's intents, applies the rules and the physics, and decides what happens: positions, hits, damage, deaths. It is the only authority, so nobody can cheat by modifying their client.
+3. The server sends back the **state** and the **archetypes** ("there is a ranged weapon here"). It does not say what it looks like.
+4. Each game's **output translator** chooses how to show it with what that game has.
+
+## The concepts, one by one
+
+| Concept | What it is | Example |
+|---|---|---|
+| **Intent** | What the player *wants* to do, regardless of which key they pressed or which game they use | move, turn, jump, fire, use, switch weapon |
+| **Intent vocabulary** | The shared list of every intent the standard recognizes. Published by the SDK | ~15 intents in version 0 |
+| **Archetype** | Something that *exists* in the world, described by its function, with no shape or graphics | `weapon.ranged`, `weapon.melee`, `health_pickup`, `armor` |
+| **Archetype catalog** | The shared list of archetypes. Also published by the SDK | ~15 archetypes in version 0 |
+| **Appearance palette** | The items *one* game has that can stand for an archetype. Each game's "bag of items" | Minecraft: bow, crossbow, fishing rod |
+| **Capabilities** | What a game declares when it connects: which intents it can send and which archetypes it can show | "I cannot jump", "I can show weapons and health pickups" |
+| **Resolver** | The piece that picks the best option from a closed list. It can be a table, a person or an AI model | "weapon.ranged in Minecraft → bow" |
+| **Translation profile** | The file where decisions are saved. Once pinned, a decision does not change | `signet.lock.json` |
+
+## One archetype, three appearances
+
+| The server says | Minecraft shows | Doom shows | OpenArena shows |
+|---|---|---|---|
+| `weapon.ranged` | a bow | the pistol, with its animation | the machine gun, with its animation |
+| `health_pickup` | a golden apple | the Doom medikit | the health orb |
+
+For the server, all three players have the same thing: a ranged weapon with the same damage and the same range. Only what each one sees on their screen changes.
+
+## The translation API
+
+One API, two directions. Both take a closed list of candidates and return them **ranked**:
+
+```text
+to_intent(context, intent_vocabulary)   -> ranked intents
+to_appearance(archetype, palette)       -> ranked appearances
+```
+
+A resolver can be a plain lookup table, a person, or a model. They are interchangeable behind the same API.

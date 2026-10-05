@@ -17,7 +17,7 @@ Every engine is different, but every game answers the same three questions. Forg
 | What can **exist** in the world? | Archetypes the game can show | `weapon.ranged`, `weapon.melee`, `health_pickup` |
 | What does the game **have** to show them? | The appearance palette | bow, crossbow, fishing rod, golden apple |
 
-Together they become the game's **capabilities**, which the translator declares when it connects. The server then uses only what every game in the match can handle.
+Together they become the game's **capabilities**, which the translator declares when it connects. A declaration is an offer: the server derives a **negotiated session contract** from the offers, the active semantic profiles and the session requirements. Required unsupported semantics fail admission unless a typed fallback is explicitly allowed. See [Semantic contracts](/proposals/semantic-contracts/).
 
 ## Setting up controls in advance (calibration)
 
@@ -75,4 +75,4 @@ For every archetype, Forge asks the resolver to rank the palette. For every comp
 
 ## Recording what the game cannot do
 
-Forge also records **gaps**: intents the game cannot emit (an old game without jumping) or archetypes it cannot show. Thanks to capabilities, the server uses this to approximate or ignore those actions instead of breaking the match.
+Forge also records **gaps**: intents the game cannot emit (an old game without jumping) or archetypes it cannot show. These gaps are offers, not silent omissions: the session contract marks each one `SUPPORTED`, `SUPPORTED_WITH_FALLBACK`, `OBSERVE_ONLY` or `INCOMPATIBLE`, and a simulation-affecting gap requires an explicit typed fallback instead of a silent approximation. See [Semantic contracts](/proposals/semantic-contracts/).

@@ -1,0 +1,160 @@
+---
+title: Translator trust and validation
+description: Review-branch proposal. Evidence boundaries, freshness, integration mode and the future-facing lifecycle notes that are secondary to the semantic contract.
+---
+
+import { Callout } from 'nextra/components'
+
+# Translator trust and validation
+
+<Callout type="warning">
+**Review-branch proposal, secondary.** This page is deliberately smaller than [Semantic contracts](/proposals/semantic-contracts/). The semantic/determinism work is the primary proposal; the notes here are evidence boundaries (P1) and clearly non-blocking future work (P2+).
+</Callout>
+
+A shared semantic hub reduces translator *authoring* toward O(n). It does not reduce empirical *validation* demand to O(n): two locally conformant adapters can still interact badly because of timing, fallback composition, ordering, visibility, lifecycle or authority boundaries.
+
+```text
+O(n) mapping topology != O(n) empirical validation demand
+```
+
+This page records how we propose to keep those claims separate and scoped.
+
+## P1 — Evidence boundaries
+
+### Mapping provenance and freshness
+
+**Upstream draft seam:** "once a choice is pinned, the result is always the same", and "Once pinned, a decision does not change".
+
+Pinned means *immutable within a profile revision*. It does not mean *current* or *correct*.
+
+```text
+PINNED_CHOICE != CORRECT_CHOICE
+```
+
+**Our proposal:** bind simulation-relevant mappings to declared dependencies (game/version identity, integration-surface digest, semantic definition, transform, candidate fingerprint, resolver identity where relevant) plus replay/conformance evidence. Compatibility status is a separate, mutable field:
+
+```text
+VALID -> SUSPECT -> REVALIDATING -> VALID / INVALID
+```
+
+An observed drift example: after a mapping dependency changed, the typed profile still passed, but the semantic mapping was correctly marked `SUSPECT` because `integration_surface_digest` and `game_version` had changed. A pinned decision stayed pinned; its compatibility changed.
+
+### Effective-profile identity
+
+**Our proposal:** the thing that behaves is the *effective profile*, not the package bytes.
+
+```text
+PACKAGE_BYTES != EFFECTIVE_PROFILE
+```
+
+Identical translator bytes can behave differently because of participant overlays, calibration, session policy, semantic-profile selection and fallback approval. The `effective_profile_digest` described in [Semantic contracts](/proposals/semantic-contracts/) names the resolved behavior-bearing profile cut. The digest is evidence of *what was resolved*; a signature over package bytes is a different claim.
+
+### Integration mode is part of the trust subject
+
+A native engine extension runs inside the host process; a controlled-server gateway holds a credential boundary and talks to a running world. They do not carry the same authority surface, so a single "verified" badge cannot cover both.
+
+```text
+HOST_PROCESS_EXTENSION
+SANDBOXED_WORKER
+CONTROLLED_SERVER_GATEWAY
+EXTERNAL_OFFICIAL_API
+REIMPLEMENTATION
+FULL_APPLICATION
+```
+
+### Declared permission versus enforced permission
+
+A role contract lists what an adapter is allowed to ask for. It does not confine the adapter.
+
+```text
+ROLE_CONTRACT != SANDBOX_POLICY
+DECLARED_PERMISSION != ENFORCED_PERMISSION
+```
+
+Broker/API mediation, OS isolation, network policy and credential scoping are separate evidence. We propose recording integration mode together with the confinement class, never collapsing them into a single trust bit.
+
+### Evidence labels must match what ran
+
+Do not convert a partial check into an interoperability claim.
+
+| Observed | Must not be rewritten as |
+|---|---|
+| `ABI_HOST_HARNESS_PASS` | `GODOT_RUNTIME_PASS` |
+| `SAFE_ARTIFACT` | `PROTOCOL_CONFORMANCE` |
+| `PROTOCOL_CONFORMANCE` | `GAME_COMPATIBILITY` |
+| `VALID_SIGNATURE` | `CURRENT_AUTHORIZATION` |
+| `DECLARED_PERMISSION` | `ENFORCED_PERMISSION` |
+
+Artifact digest, signer, current authorization, provenance, reproducibility, integration mode, confinement class, conformance evidence, compatibility evidence and lifecycle state are recorded separately.
+
+### Adapter role contracts
+
+Our first generic adapter interface was falsified by the documented responsibilities of a real target. The replacement describes operations by responsibility and generates stable bindings, manifests and test skeletons from that descriptor, while keeping engine callbacks, RCON commands, coordinate transforms and version quirks explicit.
+
+```text
+HOST
+IMPORTER
+WORLD
+INPUT
+PRESENTATION
+AUTHORITY
+```
+
+A real target must be allowed to falsify the descriptor. This is **experimental evidence**, not implemented Signet behavior, and remains in the public research notebook rather than in this repository.
+
+### Validation ladder
+
+We propose an explicit ladder so a low rung is never presented as a high one:
+
+```text
+V0 structural validity
+V1 behavioral conformance
+V2 independent implementation
+V3 pairwise interoperability
+V4 independent reproduction
+V5 operational freshness
+```
+
+Preserve negative and invalidated evidence, not only PASS records.
+
+### Local-first, and consent that is actually separate
+
+**Our proposal** keeps Forge local-first:
+
+```text
+runtime:          pinned deterministic profile
+Forge:            local by default
+remote resolver:  explicit opt-in + declared export schema
+training data:    separate explicit action
+```
+
+**Upstream draft seam:** "Every approved choice is a training example."
+
+```text
+LOCAL_APPROVAL != DATASET_CONTRIBUTION
+```
+
+> Every approved choice is *eligible* to become a training example. Contribution to a shared dataset is a separate, explicit action under the dataset contribution terms.
+
+Dataset examples should carry immutable identity, provenance, semantic/profile version, license and invalidation/supersession lineage.
+
+## P2+ — Future-facing, not blocking
+
+The following are real needs for a mature ecosystem and are **not** a prerequisite for beginning Signet 2. They are listed so the boundary is explicit, not so they are built first.
+
+- **Package/update framework** with reproducible resolution and pinning.
+- **TUF/Sigstore-style trust distribution** for publishers and update roots.
+- **Lifecycle and revocation** richer than `latest`, for example `ACTIVE`, `SUPERSEDED`, `DEPRECATED`, `YANKED_COMPATIBILITY`, `COMPATIBILITY_INVALIDATED`, `SECURITY_REVOKED`, `PUBLISHER_REVOKED`, `LEGAL_OR_POLICY_BLOCKED`. Compatibility failure, security compromise and legal/policy scope are different events.
+- **Governance roles:** protocol, semantic-profile, translator publisher, participant, package directory, update root, incident, dataset/model and conformance-suite authority. The same people may hold several roles initially, but artifacts should name them separately.
+- **Larger validation registries** and cross-project conformance suites.
+
+A profile-only pull request can change runtime behavior without any code change, so when this work starts the review should surface the semantic subject, behavior diff, authority class, invalidated evidence and resulting immutable profile digest.
+
+## Evidence links (placeholders on this review branch)
+
+The supporting experiments live in the public research notebook `Distributed-Minds/Fleet-Control-Public`, not in this repository. The corrected heads are not yet pushed; the markers below are replaced when they are.
+
+- **L1 — cross-language semantic determinism:** `EVIDENCE-L1-HEAD`, correction branch `correction/l1-cross-language-determinism`.
+- **L2 — role-contract reproduction:** `EVIDENCE-L2-HEAD`, correction branch `correction/l2-role-contract-reproducibility`.
+
+Evidence links will be pinned to the corrected commits, which include adversarial non-BMP vectors, deterministic rejection reasons, HASH05 enforcement, regenerated role-contract artifacts and rerun coverage.

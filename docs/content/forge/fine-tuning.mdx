@@ -22,13 +22,15 @@ flowchart LR
 
 The fine-tuned model suggests better next time.
 
-Every approved decision is an example: *situation, options, chosen*. With enough examples the model can be fine-tuned for video games. With a model like CLM, which separates a large frozen encoder from two small "heads", only those heads would need training, which should be cheap. This has not been tested yet.
+Every approved decision is **eligible** to become an example: *situation, options, chosen*. With enough examples the model can be fine-tuned for video games. With a model like CLM, which separates a large frozen encoder from two small "heads", only those heads would need training, which should be cheap. This has not been tested yet.
+
+**Review-branch proposal.** Local approval is not consent to contribute. Contribution to a shared dataset is a separate explicit action under the dataset contribution terms: `LOCAL_APPROVAL != DATASET_CONTRIBUTION`. Dataset examples should carry immutable identity, provenance, semantic/profile version, license and invalidation lineage. See [Translator trust and validation](/proposals/translator-trust-and-validation/).
 
 ## Data rules
 
 - Only names and identifiers. **Never** game files: no textures, sounds or models.
 - Nothing about the player: no usernames and no key logs.
-- Contributed under an open license, so the whole community benefits.
+- Contributed under an open license, as a separate explicit opt-in, so the whole community benefits.
 
 ## Validate before relying on it
 

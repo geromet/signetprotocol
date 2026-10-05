@@ -14,7 +14,7 @@ import { Callout } from 'nextra/components'
 - **The server does not change for each new game.** It only understands intents and archetypes.
 - **Nothing is random during the match.** Every decision comes from a pinned profile.
 - **AI stays outside the protocol.** If a model fails or changes, the match is not affected.
-- **Limited games do not break the match.** Thanks to capabilities, the server knows what each one can do.
+- **Limited games do not break the match.** Thanks to capabilities, the server derives a negotiated session contract that records what each game can do and what fallbacks were accepted.
 - **Building a translator is easier.** Calibration solves the obvious, the model suggests the hard parts and Forge keeps the work.
 
 ## Limits and rules
@@ -22,6 +22,17 @@ import { Callout } from 'nextra/components'
 - **Legal.** Calibration only reads the player's own devices and what the game officially allows: open-source engines, permitted mods or your own server. No code is injected into online games and no anti-cheat systems are bypassed. A closed game with no legitimate way to read or drive it is out of scope.
 - **Physics.** Intents do not remove the need for a common physics on the server. The motion profile helps each game feel faithful, but the server remains the authority.
 - **Model not validated.** We have not tested any model for this yet. The figures for the model mentioned are its authors', on other tasks.
+
+## Review-branch proposal
+
+This review branch agrees with the architecture and tightens the boundaries that make the reliability claims checkable:
+
+- **Semantic identity and negotiation** so "shared meaning" is versioned and deterministic, not just shared labels. See [Semantic contracts](/proposals/semantic-contracts/).
+- **Evidence boundaries** so a partial check is never presented as full interoperability. See [Translator trust and validation](/proposals/translator-trust-and-validation/).
+- **Resolver abstention** (`NO_MATCH` / `ABSTAIN`), because a closed candidate list does not guarantee a correct candidate is present.
+- **Local-first Forge** with dataset contribution as a separate explicit action.
+
+These are proposals for discussion, not implemented Signet behavior.
 
 ## Compatibility with the current version
 

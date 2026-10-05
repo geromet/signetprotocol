@@ -24,6 +24,8 @@ Advantages of this approach:
 - **It is explainable.** You see the scores of every option, not just the winner.
 - **It is replaceable.** The resolver is an interface: a model today, a better one tomorrow, or a hand-written table.
 
+**Review-branch proposal.** A closed list prevents invention, but it does not guarantee that a correct candidate is present. The resolver should be able to return `NO_MATCH` / `ABSTAIN`, and a simulation-affecting miss should fail closed or require an explicit pin instead of silently using a bounded wrong answer. The suggestion is advisory: `MODEL_SUGGESTION != AUTHORITY`. See [Semantic contracts](/proposals/semantic-contracts/).
+
 ## Decision order
 
 ```mermaid
@@ -44,6 +46,8 @@ Priority when there are several sources:
 2. The translator's **profile**.
 3. The **model's** suggestion.
 4. A safe **default**.
+
+**Review-branch proposal.** This precedence applies within an authority class; it is not one universal rule for every entry. Input bindings and appearances are participant-owned, semantic mappings are publisher-owned and session policy is server-owned. See [Translation profiles](/forge/workflow/).
 
 <Callout type="info">
 **The model is never in the game loop.** The server simulates 20 times per second and a model of this size needs a GPU. So the model works before playing or when something new appears, and its answer is saved. During the match only the profile is consulted, which is instant.

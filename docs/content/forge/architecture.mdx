@@ -18,7 +18,7 @@ The system has three parts. What matters is **what stays inside each game** and 
 Only meaning travels over the network, never game files.
 
 1. **The player** presses a key in their game. The **input translator** turns it into an intent ("move forward", "fire").
-2. **The server** receives everyone's intents, applies the rules and the physics, and decides what happens: positions, hits, damage, deaths. It is the only authority, so nobody can cheat by modifying their client.
+2. **The server** receives everyone's intents, applies the rules and the physics, and decides what happens: positions, hits, damage, deaths. It is authoritative over shared simulation state, so a client cannot directly dictate authoritative positions, hits, damage or deaths. That removes important classes of client-side state forgery, but it does not by itself prevent every form of cheating.
 3. The server sends back the **state** and the **archetypes** ("there is a ranged weapon here"). It does not say what it looks like.
 4. Each game's **output translator** chooses how to show it with what that game has.
 
@@ -33,7 +33,9 @@ Only meaning travels over the network, never game files.
 | **Appearance palette** | The items *one* game has that can stand for an archetype. Each game's "bag of items" | Minecraft: bow, crossbow, fishing rod |
 | **Capabilities** | What a game declares when it connects: which intents it can send and which archetypes it can show | "I cannot jump", "I can show weapons and health pickups" |
 | **Resolver** | The piece that picks the best option from a closed list. It can be a table, a person or an AI model | "weapon.ranged in Minecraft → bow" |
-| **Translation profile** | The file where decisions are saved. Once pinned, a decision does not change | `signet.lock.json` |
+| **Translation profile** | The file where decisions are saved. Once pinned, a decision is immutable within that profile revision; its compatibility may still become stale when declared dependencies change | `signet.lock.json` |
+
+**Review-branch proposal.** The vocabulary and catalog entries above are display names. A normative semantic item should also carry a versioned reference, and a capability declaration should be an offer that the session resolves into a deterministic negotiated contract rather than a common-subset intersection. See [Semantic contracts](/proposals/semantic-contracts/).
 
 ## One archetype, three appearances
 
@@ -42,7 +44,7 @@ Only meaning travels over the network, never game files.
 | `weapon.ranged` | a bow | the pistol, with its animation | the machine gun, with its animation |
 | `health_pickup` | a golden apple | the Doom medikit | the health orb |
 
-For the server, all three players have the same thing: a ranged weapon with the same damage and the same range. Only what each one sees on their screen changes.
+For the server, all three players have the same thing: a ranged weapon with the same damage and the same range. Only what each one sees on their screen changes. The archetype identifies the semantic role; the server-owned ruleset carries the authoritative damage, range, cooldown and other parameters.
 
 ## The translation API
 

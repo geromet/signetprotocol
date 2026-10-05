@@ -1,0 +1,270 @@
+---
+title: Semantic contracts
+description: Review-branch proposal. Versioned semantic identity, capability negotiation, deterministic composition and executable conformance vectors for Signet 2.
+---
+
+import { Callout } from 'nextra/components'
+
+# Semantic contracts: identity, negotiation and composition
+
+<Callout type="warning">
+**Review-branch proposal.** This page is our proposed addition to the Signet 2 draft. It is not implemented Signet behavior and it is not yet part of the upstream draft.
+</Callout>
+
+This is the main proposal of this review branch. The architecture in [Signet 2 / Forge](/forge/) is a good fit for the problem; our feedback is that the boundary around **shared meaning** should be explicit, versioned and executable before independent translators are built against it.
+
+## How to read this branch
+
+This review branch mixes four different kinds of statement. They are labelled so a reader never has to guess which one they are looking at:
+
+| Label | What it means |
+|---|---|
+| **Implemented** | Present in Signet/1 or in the current upstream code |
+| **Upstream draft** | Proposed by the current Signet 2 / Forge draft |
+| **Our proposal** | Added by this review branch |
+| **Experimental evidence** | Produced by our experiments; scoped, not a protocol guarantee |
+
+Everything on this page is **our proposal** unless it explicitly quotes or links the other categories. Sharing labels such as `fire` or `weapon.ranged` is upstream draft; the identity, negotiation and composition rules below are ours.
+
+## 1. A label is not an identity
+
+**Upstream draft:** semantic items are identified mainly by display labels such as `move`, `fire`, `weapon.ranged` and `health_pickup`.
+
+Labels are a good user-facing name and a bad protocol identity.
+
+```text
+SHARED_LABELS != SHARED_SEMANTICS
+```
+
+Two implementations can agree on the word `fire` while disagreeing about whether it is a request or an accepted action, whether it repeats, its cooldown, what happens in an invalid state, who is authoritative and what side effects it has.
+
+**Our proposal:** every normative semantic item carries a stable reference, and the label is only a display name.
+
+```json
+{
+  "semantic_ref": {
+    "namespace": "signet.core",
+    "id": "intent.fire",
+    "version": 3,
+    "definition_hash": "sha256:…"
+  },
+  "label": "fire",
+  "definition": "Request to discharge the currently held ranged weapon once.",
+  "examples": ["single shot from a pistol"],
+  "non_examples": ["holding a beam weapon", "reloading"],
+  "conformance_assertions": ["..."]
+}
+```
+
+Two implementations may claim the same semantic only when they reference the same normative definition or an explicitly compatible successor. Adding a field or changing a side effect is a new version, not an edit in place.
+
+## 2. A small core plus modular profiles
+
+**Upstream draft:** one shared intent vocabulary and one archetype catalog.
+
+A single flat list tends to inherit the assumptions of the first game family it was written for (usually a first-person shooter). A conservative core plus separately versioned profiles keeps the common case small and lets non-FPS games activate what they need without stretching core terms.
+
+```text
+signet.core            smallest shared meaning (movement, basic combat, existence)
+signet.combat          damage, death, reload, projectile semantics
+signet.inventory       item, quantity, transfer
+signet.vehicles        mount, control, occupancy
+signet.turn-based      turn, phase, initiative
+signet.cards           deck, hand, play, reveal
+```
+
+A session activates only the profiles it needs. Profile IDs are versioned references, not directories of loose files.
+
+## 3. Capability offers become a negotiated session contract
+
+**Upstream draft:** "The server uses the common subset. If a game cannot express an intent, the server ignores it or approximates it, and says so, instead of failing."
+
+A set intersection is not enough once a capability can be required, optional, parameterized, approximable, observe-only or unavailable.
+
+```text
+SUPPORTED
+SUPPORTED_WITH_FALLBACK
+OBSERVE_ONLY
+INCOMPATIBLE
+```
+
+**Our proposal.** A capability declaration is an *offer*. The session computes a deterministic **negotiated session contract** from the participants' offers plus the session requirements. Missing required semantics fail admission unless the session explicitly authorizes a typed fallback; optional semantics are activated deterministically (section 6).
+
+The contract records at least:
+
+```json
+{
+  "contract_version": 1,
+  "semantic_versions": { "signet.core": 3, "signet.combat": 2 },
+  "ruleset_identity": "…",
+  "required": ["intent.fire", "intent.move"],
+  "optional": ["intent.jump"],
+  "activated": ["intent.fire", "intent.move", "intent.jump"],
+  "rejected": [{ "id": "intent.crouch", "reason": "NOT_OFFERED" }],
+  "accepted_fallbacks": [],
+  "ordering_model": "event-sequence",
+  "admission": "ACCEPTED"
+}
+```
+
+The same offers plus the same session requirements must produce the same contract, independent of the order in which participants connected or the order in which a language enumerates its data structures.
+
+## 4. Required and optional semantics, and typed fallback
+
+**Upstream draft:** unsupported intents are "ignored or approximated".
+
+Ignoring a cosmetic effect and approximating an authoritative gameplay action are not equivalent, so fallback cannot be one unspecified behavior.
+
+**Our proposal.** A fallback is a typed, explicit decision that states:
+
+| Field | Purpose |
+|---|---|
+| `source_semantic` | What could not be honored |
+| `target` | The replacement semantic, or `NO_OP` |
+| `fallback_class` | Presentation, observe-only, lossy gameplay, substitution |
+| `information_loss` | What is lost |
+| `shared_state_impact` | None, local, or authoritative |
+| `approving_authority` | Profile, ruleset or session policy that allowed it |
+| `conformance_evidence` | Result that supports the fallback |
+
+```text
+Presentation-only fallbacks may be permissive.
+A fallback that changes shared simulation semantics must be explicitly allowed
+by the active profile or ruleset, and is recorded in the session contract.
+```
+
+## 5. Semantic acceptability is not session preference
+
+**Upstream draft seam:** the draft leaves the ordering/visibility model implicit.
+
+**Our proposal** separates what is *allowed* from what is *preferred*:
+
+```text
+profile:
+  accepted semantic models (acceptability)
+
+session:
+  ordered preferences
+
+negotiation:
+  first session preference accepted by every activated profile
+```
+
+Example:
+
+```text
+session:   fixed-tick, event-sequence, turn-sequence
+profile A: fixed-tick, event-sequence
+profile B: event-sequence, turn-sequence
+selected:  event-sequence
+```
+
+> When several models satisfy every activated semantic profile, the session MUST select from an explicit ordered preference list. It MUST NOT derive semantic policy from implementation enumeration order or a hidden default.
+
+## 6. Optional profiles activate deterministically
+
+Optional must not mean "enable it if it is installed". Activation depends on the resolved contract, not on the host.
+
+**Our proposal**, in order:
+
+1. Compose the required baseline.
+2. Process optionals in the declared session preference order.
+3. Tentatively add the candidate.
+4. Resolve its dependencies.
+5. Rerun the full composition and the ordering/visibility selection.
+6. Keep the candidate only if the complete contract stays valid.
+7. Otherwise skip it and record an exact machine-readable reason.
+
+Earlier accepted optionals keep their priority. Representative reasons from the executable vectors:
+
+```text
+ORDERING_MODEL_CONFLICT
+REQUIRED_PROFILE_UNSUPPORTED
+DEPENDENCY_VERSION_MISMATCH
+```
+
+## 7. Translation-profile authority classes
+
+**Upstream draft seam:** a single profile combines decisions with different owners and one implied precedence ("a pin from the player" first).
+
+The owner is not the same for every entry. We propose an explicit authority class per entry, with precedence applied per class rather than one universal rule.
+
+| Class | Natural authority | Typical precedence |
+|---|---|---|
+| `INPUT_BINDING` | participant / adapter | participant overlay |
+| `MOTION_OBSERVATION` | measured adapter evidence | measured value, participant confirms |
+| `SEMANTIC_MAPPING` | translator / profile publisher | publisher baseline, session policy |
+| `APPEARANCE_MAPPING` | participant / client | participant overlay |
+| `SESSION_POLICY` | server / session | session requirements |
+
+> There should not be one universal "player pin wins" rule for simulation-affecting semantics. A participant pin on a cosmetic appearance and a participant pin on authoritative damage are different kinds of claim.
+
+## 8. Publisher baseline versus participant overlay
+
+**Upstream draft seam:** the profile is both a community translator artifact and the place where a player's decisions live.
+
+```text
+publisher_profile   immutable, versioned baseline
+participant_overlay participant-owned bindings and pins
+session_resolution  derived effective profile
+```
+
+A package update must not silently rewrite player-owned decisions. The effective profile is the output of a documented, deterministic composition of baseline, overlay and session-compatible derivation.
+
+```text
+PACKAGE_BYTES != EFFECTIVE_PROFILE
+```
+
+## 9. Deterministic composition and canonicalization
+
+Composition is protocol-relevant: two peers that compose the same inputs must get the same result and the same digest.
+
+**Our proposal:** a canonical byte form (stable key order, normalized numbers and references), an `effective_profile_digest` over the resolved, behavior-bearing profile cut, and test vectors that cover dependency conflicts, stale overlays, duplicate IDs, version mismatch, optional activation and ordering.
+
+The digest is evidence of *what was resolved*, not a signature and not a claim that the resolution is correct. See [translator trust and validation](/proposals/translator-trust-and-validation/) for the trust boundary around it.
+
+## 10. Resolver calls may abstain
+
+**Upstream draft:** a closed candidate list, ranked.
+
+A closed list prevents invention; it does not guarantee that a correct candidate is present.
+
+```text
+CLOSED_CANDIDATES != CORRECT_CANDIDATE_PRESENT
+```
+
+**Our proposal:** the resolver API returns ranked candidates **or** `NO_MATCH` / `ABSTAIN`. A simulation-affecting miss fails closed or requires an explicit pin; it is never silently turned into a bounded wrong answer. The resolver remains advisory:
+
+```text
+MODEL_SUGGESTION != AUTHORITY
+```
+
+The planned resolver experiment should measure candidate-order stability and `NO_MATCH` behavior, not top-1 accuracy alone. Pilot metrics are recorded as scoped experimental evidence in [translator trust and validation](/proposals/translator-trust-and-validation/).
+
+## 11. Executable conformance vectors
+
+**Our proposal** ships a small reference implementation in both Python and JavaScript plus a versioned vector corpus. Passing the corpus is the minimum bar for claiming a compatible semantic core.
+
+Current vector families:
+
+```text
+HASH-VECTOR-001                  canonical hashing
+COMP-VECTOR-001                  profile composition
+NEGOTIATION-VECTOR-001           required/optional negotiation
+OPTIONAL-NEGOTIATION-VECTOR-001  deterministic optional activation
+CONTRACT-VECTOR-001              negotiated contract shape
+additional composition vectors
+negative composition vectors
+```
+
+<Callout type="info">
+These are **candidate research semantics**, not implemented Signet behavior. The Python and JavaScript reference implementations must agree on one normative ordering/comparator rule, including non-BMP identifiers and declared-unordered collections, before the corpus is cited as reproduced evidence.
+</Callout>
+
+Evidence (pinned once the correction branch is pushed) is maintained in the public research notebook `Distributed-Minds/Fleet-Control-Public`:
+
+- L1 reference implementation and vectors: `EVIDENCE-L1-HEAD` — branch `correction/l1-cross-language-determinism`.
+
+## What is intentionally not here
+
+Richer package distribution, lifecycle/revocation and governance are real but **not prerequisites** for starting Signet 2. They are kept as future-facing notes on the [translator trust and validation](/proposals/translator-trust-and-validation/) page.

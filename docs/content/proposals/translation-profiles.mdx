@@ -13,6 +13,10 @@ import { Callout } from 'nextra/components'
 
 Download the full design document as a PDF: [Signet 2 architecture (PDF)](/signet-2-architecture.pdf). The companion tool is described in [Signet Forge](/forge/).
 
+<Callout type="info">
+**Review-branch proposal.** This page is the upstream draft. This review branch proposes a stricter semantic contract around it: see [Semantic contracts](/proposals/semantic-contracts/) for the primary proposal and [Translator trust and validation](/proposals/translator-trust-and-validation/) for the secondary evidence boundaries.
+</Callout>
+
 ## The problem
 
 A translator today converts one game's world into another game's world. It works, but every new game has to understand every other one, and each pair of games ends up with its own special cases: a gun in Doom is not a gun in Minecraft, and a jump is not the same jump in every engine.
@@ -43,6 +47,8 @@ flowchart LR
 
 Signet/1 already has the seed of the first two: `Intencion` carries `avance`, `lateral`, `yaw`, `correr`, `disparar`, `usar` and `arma`, and the weapons `ARMA_PUNO`, `ARMA_PISTOLA` and `ARMA_ESCOPETA` are neutral archetypes that each viewer draws its own way. This proposal grows both lists and adds the palette and the resolver.
 
+**Review-branch proposal.** Those labels are display names, not protocol identity. A normative semantic item should also carry a versioned reference (`namespace`, `id`, `version`, `definition_hash`). Two implementations claim the same semantic only when they reference the same definition or an explicitly compatible successor. See [Semantic contracts](/proposals/semantic-contracts/).
+
 ## Capabilities
 
 When a client connects it declares what it can do:
@@ -50,7 +56,7 @@ When a client connects it declares what it can do:
 - which intents it can **emit** (a game without jumping never emits `jump`),
 - which archetypes it can **show**, and with what palette.
 
-The server uses the common subset. If a game cannot express an intent, the server ignores it or approximates it, and says so, instead of failing. This is how an older or simpler game can play next to a newer one without losing the match.
+**Review-branch proposal.** A capability declaration is an **offer**, not the session contract. The server derives a **negotiated session contract** from participant offers, the active semantic profiles and the session requirements. Required unsupported semantics fail admission unless a typed fallback is explicitly allowed; optional semantics activate deterministically. Missing semantics are recorded as `SUPPORTED`, `SUPPORTED_WITH_FALLBACK`, `OBSERVE_ONLY` or `INCOMPATIBLE`, so an older or simpler game can play next to a newer one without silently changing shared simulation meaning. See [Semantic contracts](/proposals/semantic-contracts/).
 
 ## The translation API
 
@@ -85,7 +91,9 @@ Calibration only reads **the player's own input devices** and what the game offi
 
 ## Translation profiles: decisions that stay decided
 
-Every decision is saved in a **translation profile**, next to the translator's `signet.json`. It works like a lock file: once a choice is pinned, the result is always the same.
+Every decision is saved in a **translation profile**, next to the translator's `signet.json`. It works like a lock file: once a choice is pinned, that profile revision always gives the same result.
+
+**Pinned is not current.** A pinned decision is immutable within its profile revision, but its compatibility can become `SUSPECT` or `INVALID` when its declared dependencies (game version, integration digest, semantic definition) change. See [Translator trust and validation](/proposals/translator-trust-and-validation/).
 
 ```json
 {
@@ -99,6 +107,19 @@ Every decision is saved in a **translation profile**, next to the translator's `
 ```
 
 **Resolution order:** a pin from the player, then the translator's own profile, then the resolver's suggestion, then a safe default.
+
+**Review-branch proposal — authority classes.** Entries do not all have the same owner, so one universal precedence rule is wrong for simulation-affecting semantics. We propose an explicit authority class per entry: `INPUT_BINDING` and `APPEARANCE_MAPPING` are participant-owned, `MOTION_OBSERVATION` is measured adapter evidence, `SEMANTIC_MAPPING` belongs to the translator/profile publisher and `SESSION_POLICY` belongs to the server/session. Precedence is applied per class.
+
+The effective profile is derived, not merged by popularity:
+
+```text
+publisher baseline (immutable, versioned)
++ participant overlay (local, owned by the player)
++ session-compatible derivation
+= effective profile
+```
+
+A package update must not silently rewrite player-owned pins. See [Semantic contracts](/proposals/semantic-contracts/).
 
 **When something is not registered**, the policy is configurable: *strict* (ignore it), *suggest* (use the best candidate, marked provisional, and queue it for review) or *ask* (decide in the development tool).
 
@@ -116,21 +137,23 @@ Because the profile lives in git, the community can improve a translator with a 
 
 The model is **not** in the per-tick path: the server simulates at 20 Hz and a model of that size needs a GPU. It runs offline or on a miss, and its result goes into the profile.
 
+**Review-branch proposal.** The resolver may return `NO_MATCH` / `ABSTAIN`. A closed list prevents invention, but it does not guarantee that a correct candidate is present, and a bounded wrong answer is still wrong. A simulation-affecting miss must fail closed or require an explicit pin. The resolver stays advisory: `MODEL_SUGGESTION != AUTHORITY`. See [Semantic contracts](/proposals/semantic-contracts/).
+
 We have **not** validated any model for this yet. The proposed experiment is below.
 
 ## Learning from decisions
 
-Every approved choice is a training example: *state, candidates, chosen*. With enough of them a ranker can be fine-tuned for games. Rules for the dataset:
+Every approved choice is **eligible** to become a training example: *state, candidates, chosen*. With enough of them a ranker can be fine-tuned for games. Rules for the dataset:
 
 - Only names and identifiers, never game files, textures, sounds or models.
-- Contributed under an open license.
+- Contributed under an open license, as a **separate explicit action**: local approval is not consent to contribute. `LOCAL_APPROVAL != DATASET_CONTRIBUTION`.
 - Nothing about the player: no usernames, no input logs.
 
 ## Experiment before committing
 
 1. Write about 30 cases (for example `weapon.ranged` against the palettes of Minecraft, Doom and OpenArena, and 10 intent mappings).
 2. Compare three resolvers: hand-written rules, a plain text-embedding similarity and a contrastive ranker.
-3. Measure top-1 accuracy and how often a person overrides the suggestion.
+3. Measure top-1 accuracy, candidate-order stability, `NO_MATCH` behavior and how often a person overrides the suggestion.
 4. Decide whether a model belongs in the architecture at all.
 
 ## Compatibility
@@ -144,3 +167,5 @@ Signet/1 is append-only, so the first step can be additive: an optional `capabil
 - Who maintains the intent vocabulary and the archetype catalog, and how are new entries accepted? (See [governance](https://github.com/kian-cx/signetprotocol/blob/main/GOVERNANCE.md).)
 - Where does the resolver run: the player's machine, a shared service, or only in the development tool?
 - How are conflicting community profiles for the same game resolved?
+
+**Review-branch note:** [Semantic contracts](/proposals/semantic-contracts/) proposes answers for the identity, negotiation, authority and composition questions; [Translator trust and validation](/proposals/translator-trust-and-validation/) covers freshness, resolver-abstention evidence and the future lifecycle work. The resolver should stay local by default and never be required in the deterministic per-tick path.

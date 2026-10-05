@@ -9,7 +9,7 @@ import { Callout } from 'nextra/components'
 
 <Callout type="warning">Draft proposal, part of Signet 2.</Callout>
 
-Every decision is saved in a file next to the translator's `signet.json`, similar to the lock files that package managers use. Once pinned, the decision is **deterministic**: it always gives the same result.
+Every decision is saved in a file next to the translator's `signet.json`, similar to the lock files that package managers use. Once pinned, the decision is **deterministic within that profile revision**: it always gives the same result. Pinned is not the same as current: compatibility can become `SUSPECT` or `INVALID` when declared dependencies change. See [Translator trust and validation](/proposals/translator-trust-and-validation/).
 
 ```json
 {
@@ -33,6 +33,31 @@ Every decision is saved in a file next to the translator's `signet.json`, simila
 <Callout type="warning">
 **Safety rule:** intents that affect the simulation (moving, firing) must **always** come from a pinned decision. Otherwise client prediction and the server would drift apart. Appearance is local to each player, so it can stay provisional without affecting anyone else.
 </Callout>
+
+## Authority and ownership (review-branch proposal)
+
+Not every entry has the same owner or override rule. We propose an explicit **authority class** per entry:
+
+| Class | Natural authority |
+|---|---|
+| `INPUT_BINDING` | participant / adapter |
+| `MOTION_OBSERVATION` | measured adapter evidence |
+| `SEMANTIC_MAPPING` | translator / profile publisher |
+| `APPEARANCE_MAPPING` | participant / client |
+| `SESSION_POLICY` | server / session |
+
+Precedence is applied per class. There is not one universal "player pin wins" rule for simulation-affecting semantics.
+
+The effective profile is derived, not merged by popularity:
+
+```text
+publisher baseline (immutable, versioned)
++ participant overlay (local, owned by the player)
++ session-compatible derivation
+= effective profile
+```
+
+A package update must not silently rewrite player-owned pins. See [Semantic contracts](/proposals/semantic-contracts/).
 
 ## The review queue
 

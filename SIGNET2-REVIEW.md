@@ -165,7 +165,7 @@ Validated locally:
 - changed-page internal links PASS;
 - corrected L1 cross-language vectors PASS;
 - corrected L2 reproduction PASS;
-- final adversarial audit: no HIGH finding.
+- local adversarial review: no HIGH finding; independent review is welcome.
 
 Deliberate limitation:
 
